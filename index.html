@@ -12,7 +12,7 @@
       --text-color: #383531;      /* 落ち着いたダークブラウン */
       --text-sub: #78736a;       /* サブテキストカラー */
       --accent-color: #8c6d53;    /* アースブラウン */
-      --accent-hover: #6e543e;    /* アースブラウン（濃いめ） */
+      --accent-hover: #6e543e;    
       --accent-light: #e8dfd5;    /* ハイライト */
       --shadow-sm: 0 4px 15px rgba(140, 109, 83, 0.06);
       --shadow-hover: 0 12px 28px rgba(140, 109, 83, 0.12);
@@ -32,15 +32,9 @@
       overflow-x: hidden;
     }
 
-    /* Keyframe アニメーション */
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
     }
 
     /* ナビゲーションバー */
@@ -51,56 +45,21 @@
       top: 0;
       z-index: 100;
       border-bottom: 1px solid var(--accent-light);
-      padding: 0.8rem 1.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      padding: 1rem 1.5rem;
+      text-align: center;
     }
 
     .nav-logo {
       font-weight: 700;
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       color: var(--accent-color);
       letter-spacing: 0.03em;
-    }
-
-    .nav-buttons {
-      display: flex;
-      gap: 0.8rem;
-    }
-
-    .btn {
-      padding: 0.4rem 1.1rem;
-      border-radius: 20px;
-      font-size: 0.88rem;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      border: 1px solid var(--accent-color);
-      font-weight: 600;
-    }
-
-    .btn-outline {
-      background: transparent;
-      color: var(--accent-color);
-    }
-
-    .btn-outline:hover {
-      background: var(--accent-light);
-    }
-
-    .btn-filled {
-      background: var(--accent-color);
-      color: #fff;
-    }
-
-    .btn-filled:hover {
-      background: var(--accent-hover);
     }
 
     /* ヘッダー */
     header {
       background: linear-gradient(135deg, #f2eae1 0%, #e8dfd5 100%);
-      padding: 3.5rem 1.5rem;
+      padding: 3rem 1.5rem;
       text-align: center;
       border-bottom: 1px solid var(--accent-light);
       animation: fadeInUp 0.8s ease-out forwards;
@@ -120,132 +79,131 @@
 
     /* メインコンテンツ */
     .container {
-      max-width: 800px;
+      max-width: 850px;
       margin: 2.5rem auto;
       padding: 0 1.5rem;
     }
 
-    .card-grid {
-      display: grid;
-      gap: 1.5rem;
-    }
-
     .card {
       background: var(--card-bg);
-      border-radius: 12px;
+      border-radius: 16px;
       padding: 1.8rem;
-      border: 1px solid rgba(220, 210, 200, 0.5);
+      border: 1px solid rgba(220, 210, 200, 0.6);
       box-shadow: var(--shadow-sm);
-      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
-      opacity: 0;
+      margin-bottom: 2rem;
       animation: fadeInUp 0.8s ease-out forwards;
-    }
-
-    .card:nth-child(1) { animation-delay: 0.2s; }
-    .card:nth-child(2) { animation-delay: 0.4s; }
-
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-hover);
-      border-color: var(--accent-color);
     }
 
     .card h2 {
       font-size: 1.3rem;
       color: var(--accent-color);
-      margin-bottom: 0.8rem;
-    }
-
-    /* モーダル（ポップアップ）共通スタイル */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(56, 53, 49, 0.5);
-      backdrop-filter: blur(4px);
-      display: none;
-      justify-content: center;
+      margin-bottom: 1rem;
+      display: flex;
       align-items: center;
-      z-index: 1000;
-      animation: fadeIn 0.3s ease;
+      gap: 0.5rem;
     }
 
-    .modal-box {
-      background: var(--card-bg);
-      border-radius: 16px;
-      padding: 2.2rem;
-      width: 90%;
-      max-width: 420px;
-      box-shadow: var(--shadow-hover);
-      position: relative;
-      animation: fadeInUp 0.3s ease;
+    /* 筆記具ツールバー */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      align-items: center;
+      margin-bottom: 1rem;
+      background: #f2eae1;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      border: 1px solid var(--accent-light);
     }
 
-    .modal-close {
-      position: absolute;
-      top: 1rem;
-      right: 1.2rem;
-      font-size: 1.4rem;
-      background: none;
-      border: none;
-      color: var(--text-sub);
-      cursor: pointer;
+    .tool-group {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
     }
 
-    .modal-title {
-      font-size: 1.4rem;
-      color: var(--accent-color);
-      margin-bottom: 1.2rem;
-      text-align: center;
-    }
-
-    /* フォーム要素 */
-    .form-group {
-      margin-bottom: 1.2rem;
-    }
-
-    .form-group label {
-      display: block;
+    .tool-group label {
       font-size: 0.85rem;
       color: var(--text-sub);
-      margin-bottom: 0.3rem;
       font-weight: 600;
     }
 
-    .form-group input {
-      width: 100%;
-      padding: 0.7rem 0.9rem;
-      border: 1px solid var(--accent-light);
+    .btn-tool {
+      padding: 0.4rem 0.8rem;
       border-radius: 8px;
-      background: var(--bg-color);
+      border: 1px solid var(--accent-light);
+      background: var(--card-bg);
       color: var(--text-color);
-      font-size: 0.95rem;
-      outline: none;
-      transition: border-color 0.25s ease;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 600;
     }
 
-    .form-group input:focus {
+    .btn-tool.active {
+      background: var(--accent-color);
+      color: #fff;
       border-color: var(--accent-color);
     }
 
-    .form-submit {
-      width: 100%;
-      padding: 0.8rem;
-      border: none;
-      border-radius: 8px;
-      background: var(--accent-color);
-      color: #fff;
-      font-size: 1rem;
-      font-weight: 600;
+    .color-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid #fff;
       cursor: pointer;
-      transition: background 0.25s ease;
-      margin-top: 0.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
     }
 
-    .form-submit:hover {
-      background: var(--accent-hover);
+    .color-btn.active {
+      transform: scale(1.25);
+      border-color: var(--accent-color);
+    }
+
+    /* キャンバス（手書きノート） */
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid var(--accent-light);
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.03);
+      /* ノート風の方眼背景 */
+      background-image: 
+        linear-gradient(to right, rgba(140, 109, 83, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(140, 109, 83, 0.06) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 380px;
+      border-radius: 12px;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    /* テキストノート */
+    .note-textarea {
+      width: 100%;
+      height: 140px;
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px solid var(--accent-light);
+      background: #faf8f5;
+      color: var(--text-color);
+      font-size: 0.95rem;
+      line-height: 1.8;
+      resize: vertical;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .note-textarea:focus {
+      border-color: var(--accent-color);
+      background: #fff;
     }
 
     footer {
@@ -263,100 +221,184 @@
   <!-- ナビゲーション -->
   <nav>
     <div class="nav-logo">Neo study park group</div>
-    <div class="nav-buttons">
-      <button class="btn btn-outline" onclick="openModal('loginModal')">ログイン</button>
-      <button class="btn btn-filled" onclick="openModal('registerModal')">新規入会</button>
-    </div>
   </nav>
 
   <!-- ヘッダー -->
   <header>
     <h1>Neo study park group</h1>
-    <p>共に学び、共に成長するナレッジコミュニティ</p>
+    <p>生成り色の優しいキャンバスで自由なメモと学びを記録しよう</p>
   </header>
 
   <!-- メインコンテンツ -->
   <div class="container">
-    <div class="card-grid">
-      <div class="card">
-        <h2>📢 お知らせ</h2>
-        <p>Neo study park groupへようこそ！新規会員を募集しています。右上の「新規入会」ボタンから登録を行ってください。</p>
+    
+    <!-- 筆記用具・手書きノート機能 -->
+    <div class="card">
+      <h2>✏️ フリー手書きノート（筆記用具）</h2>
+      <p style="font-size: 0.9rem; color: var(--text-sub); margin-bottom: 1rem;">
+        ペンやマーカーを選んで、マウスや指で図やメモを自由に書くことができます。
+      </p>
+
+      <!-- 筆記用具ツールバー -->
+      <div class="toolbar">
+        <div class="tool-group">
+          <label>筆記具:</label>
+          <button class="btn-tool active" onclick="setTool('pen', this)">🖊️ ペン</button>
+          <button class="btn-tool" onclick="setTool('marker', this)">🖍️ マーカー</button>
+          <button class="btn-tool" onclick="setTool('eraser', this)">🧹 消しゴム</button>
+        </div>
+
+        <div class="tool-group">
+          <label>色:</label>
+          <div class="color-btn active" style="background: #383531;" onclick="setColor('#383531', this)"></div>
+          <div class="color-btn" style="background: #8c6d53;" onclick="setColor('#8c6d53', this)"></div>
+          <div class="color-btn" style="background: #c0392b;" onclick="setColor('#c0392b', this)"></div>
+          <div class="color-btn" style="background: #27ae60;" onclick="setColor('#27ae60', this)"></div>
+          <div class="color-btn" style="background: #f1c40f;" onclick="setColor('#f1c40f', this)"></div>
+        </div>
+
+        <div class="tool-group">
+          <label>太さ:</label>
+          <select class="btn-tool" id="lineWidth" onchange="setLineWidth(this.value)">
+            <option value="2">細め</option>
+            <option value="5" selected>標準</option>
+            <option value="12">太め</option>
+          </select>
+        </div>
+
+        <div class="tool-group" style="margin-left: auto;">
+          <button class="btn-tool" style="background: #e74c3c; color: #fff; border: none;" onclick="clearCanvas()">全消去</button>
+        </div>
       </div>
 
-      <div class="card">
-        <h2>📚 学習スペース</h2>
-        <p>ログインすると、メンバー限定の学習ノートや進捗管理機能にアクセスできます。</p>
+      <!-- キャンバス -->
+      <div class="canvas-container">
+        <canvas id="noteCanvas"></canvas>
       </div>
     </div>
-  </div>
 
-  <!-- ログイン モーダル -->
-  <div id="loginModal" class="modal-overlay" onclick="closeModalOnBg(event, 'loginModal')">
-    <div class="modal-box">
-      <button class="modal-close" onclick="closeModal('loginModal')">&times;</button>
-      <h2 class="modal-title">ログイン</h2>
-      <form onsubmit="handleAuth(event, 'ログインしました')">
-        <div class="form-group">
-          <label>メールアドレス</label>
-          <input type="email" placeholder="example@email.com" required>
-        </div>
-        <div class="form-group">
-          <label>パスワード</label>
-          <input type="password" placeholder="••••••••" required>
-        </div>
-        <button type="submit" class="form-submit">ログインする</button>
-      </form>
+    <!-- テキストメモ欄 -->
+    <div class="card">
+      <h2>📝 テキストメモ</h2>
+      <p style="font-size: 0.9rem; color: var(--text-sub); margin-bottom: 0.8rem;">
+        キーボードで文章やメモを残したい方はこちらに入力できます。
+      </p>
+      <textarea class="note-textarea" placeholder="ここに今日の学習内容やメモを入力できます..."></textarea>
     </div>
-  </div>
 
-  <!-- 新規入会 モーダル -->
-  <div id="registerModal" class="modal-overlay" onclick="closeModalOnBg(event, 'registerModal')">
-    <div class="modal-box">
-      <button class="modal-close" onclick="closeModal('registerModal')">&times;</button>
-      <h2 class="modal-title">新規入会</h2>
-      <form onsubmit="handleAuth(event, 'Neo study park groupへの入会申請を受け付けました！')">
-        <div class="form-group">
-          <label>お名前</label>
-          <input type="text" placeholder="山田 太郎" required>
-        </div>
-        <div class="form-group">
-          <label>メールアドレス</label>
-          <input type="email" placeholder="example@email.com" required>
-        </div>
-        <div class="form-group">
-          <label>パスワード設定</label>
-          <input type="password" placeholder="8文字以上" required minlength="8">
-        </div>
-        <button type="submit" class="form-submit">入会を申し込む</button>
-      </form>
-    </div>
   </div>
 
   <footer>
     <p>&copy; 2026 Neo study park group. All rights reserved.</p>
   </footer>
 
-  <!-- JavaScript（モーダル制御・送信体験） -->
+  <!-- JavaScript（手書きノート筆記制御） -->
   <script>
-    function openModal(id) {
-      document.getElementById(id).style.display = 'flex';
+    const canvas = document.getElementById('noteCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let isDrawing = false;
+    let currentTool = 'pen';
+    let currentColor = '#383531';
+    let currentLineWidth = 5;
+
+    // キャンバスサイズの自動調整
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // 描画開始
+    function startDrawing(e) {
+      isDrawing = true;
+      ctx.beginPath();
+      const pos = getPos(e);
+      ctx.moveTo(pos.x, pos.y);
     }
 
-    function closeModal(id) {
-      document.getElementById(id).style.display = 'none';
-    }
+    // 描画中
+    function draw(e) {
+      if (!isDrawing) return;
+      const pos = getPos(e);
 
-    function closeModalOnBg(event, id) {
-      if (event.target.id === id) {
-        closeModal(id);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      if (currentTool === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.lineWidth = currentLineWidth * 4;
+      } else if (currentTool === 'marker') {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = currentColor;
+        ctx.globalAlpha = 0.35; // マーカーの半透明感
+        ctx.lineWidth = currentLineWidth * 3;
+      } else {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = currentColor;
+        ctx.globalAlpha = 1.0;
+        ctx.lineWidth = currentLineWidth;
       }
+
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
     }
 
-    function handleAuth(event, message) {
-      event.preventDefault();
-      alert(message);
-      closeModal('loginModal');
-      closeModal('registerModal');
+    // 描画終了
+    function stopDrawing() {
+      isDrawing = false;
+      ctx.beginPath();
+    }
+
+    // マウス・タッチ座標取得
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
+
+    // マウスイベント
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseleave', stopDrawing);
+
+    // タッチイベント (スマホ・タブレット対応)
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
+    canvas.addEventListener('touchend', stopDrawing);
+
+    // ツール切り替え
+    function setTool(tool, element) {
+      currentTool = tool;
+      const buttons = element.parentElement.querySelectorAll('.btn-tool');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      element.classList.add('active');
+    }
+
+    // 色切り替え
+    function setColor(color, element) {
+      currentColor = color;
+      document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('active'));
+      element.classList.add('active');
+    }
+
+    // 太さ切り替え
+    function setLineWidth(width) {
+      currentLineWidth = parseInt(width);
+    }
+
+    // キャンバス全消去
+    function clearCanvas() {
+      if (confirm('手書きノートを全消去してもよろしいですか？')) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
     }
   </script>
 
