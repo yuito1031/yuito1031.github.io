@@ -145,4 +145,220 @@
     .card:nth-child(2) { animation-delay: 0.4s; }
 
     .card:hover {
-      
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hover);
+      border-color: var(--accent-color);
+    }
+
+    .card h2 {
+      font-size: 1.3rem;
+      color: var(--accent-color);
+      margin-bottom: 0.8rem;
+    }
+
+    /* モーダル（ポップアップ）共通スタイル */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(56, 53, 49, 0.5);
+      backdrop-filter: blur(4px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-box {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 2.2rem;
+      width: 90%;
+      max-width: 420px;
+      box-shadow: var(--shadow-hover);
+      position: relative;
+      animation: fadeInUp 0.3s ease;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1.2rem;
+      font-size: 1.4rem;
+      background: none;
+      border: none;
+      color: var(--text-sub);
+      cursor: pointer;
+    }
+
+    .modal-title {
+      font-size: 1.4rem;
+      color: var(--accent-color);
+      margin-bottom: 1.2rem;
+      text-align: center;
+    }
+
+    /* フォーム要素 */
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      margin-bottom: 0.3rem;
+      font-weight: 600;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border: 1px solid var(--accent-light);
+      border-radius: 8px;
+      background: var(--bg-color);
+      color: var(--text-color);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.25s ease;
+    }
+
+    .form-group input:focus {
+      border-color: var(--accent-color);
+    }
+
+    .form-submit {
+      width: 100%;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent-color);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.25s ease;
+      margin-top: 0.5rem;
+    }
+
+    .form-submit:hover {
+      background: var(--accent-hover);
+    }
+
+    footer {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      color: var(--text-sub);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--accent-light);
+      margin-top: 3rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ナビゲーション -->
+  <nav>
+    <div class="nav-logo">Neo study park group</div>
+    <div class="nav-buttons">
+      <button class="btn btn-outline" onclick="openModal('loginModal')">ログイン</button>
+      <button class="btn btn-filled" onclick="openModal('registerModal')">新規入会</button>
+    </div>
+  </nav>
+
+  <!-- ヘッダー -->
+  <header>
+    <h1>Neo study park group</h1>
+    <p>共に学び、共に成長するナレッジコミュニティ</p>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <div class="container">
+    <div class="card-grid">
+      <div class="card">
+        <h2>📢 お知らせ</h2>
+        <p>Neo study park groupへようこそ！新規会員を募集しています。右上の「新規入会」ボタンから登録を行ってください。</p>
+      </div>
+
+      <div class="card">
+        <h2>📚 学習スペース</h2>
+        <p>ログインすると、メンバー限定の学習ノートや進捗管理機能にアクセスできます。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ログイン モーダル -->
+  <div id="loginModal" class="modal-overlay" onclick="closeModalOnBg(event, 'loginModal')">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal('loginModal')">&times;</button>
+      <h2 class="modal-title">ログイン</h2>
+      <form onsubmit="handleAuth(event, 'ログインしました')">
+        <div class="form-group">
+          <label>メールアドレス</label>
+          <input type="email" placeholder="example@email.com" required>
+        </div>
+        <div class="form-group">
+          <label>パスワード</label>
+          <input type="password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="form-submit">ログインする</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 新規入会 モーダル -->
+  <div id="registerModal" class="modal-overlay" onclick="closeModalOnBg(event, 'registerModal')">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal('registerModal')">&times;</button>
+      <h2 class="modal-title">新規入会</h2>
+      <form onsubmit="handleAuth(event, 'Neo study park groupへの入会申請を受け付けました！')">
+        <div class="form-group">
+          <label>お名前</label>
+          <input type="text" placeholder="山田 太郎" required>
+        </div>
+        <div class="form-group">
+          <label>メールアドレス</label>
+          <input type="email" placeholder="example@email.com" required>
+        </div>
+        <div class="form-group">
+          <label>パスワード設定</label>
+          <input type="password" placeholder="8文字以上" required minlength="8">
+        </div>
+        <button type="submit" class="form-submit">入会を申し込む</button>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 Neo study park group. All rights reserved.</p>
+  </footer>
+
+  <!-- JavaScript（モーダル制御・送信体験） -->
+  <script>
+    function openModal(id) {
+      document.getElementById(id).style.display = 'flex';
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    function closeModalOnBg(event, id) {
+      if (event.target.id === id) {
+        closeModal(id);
+      }
+    }
+
+    function handleAuth(event, message) {
+      event.preventDefault();
+      alert(message);
+      closeModal('loginModal');
+      closeModal('registerModal');
+    }
+  </script>
+
+</body>
+</html>
