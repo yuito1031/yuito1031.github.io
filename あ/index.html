@@ -28,11 +28,11 @@ function toggleDark()
     {
         btn.innerText = 'ライトモードに切り替え';
         root.toggleAttribute('dark', true);
-        setParams2('dark', 'true');
+        setParams2(['dark', 'true']);
     } else {
         btn.innerText = 'ダークモードに切り替え';
         root.toggleAttribute('dark', false);
-        setParams2('dark', 'false');
+        setParams2(['dark', 'false']);
     }
 }
 </script>
