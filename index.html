@@ -4,41 +4,226 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>yuitoの勉強ノート</title>
-  <!-- 一行追加するだけでデザインが整う無料CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <style>
+    /* 配色定義：生成り色・アースカラー */
+    :root {
+      --bg-color: #f7f4ef;        /* 温かみのある生成り色 */
+      --card-bg: #fffefb;         /* 柔らかなアイボリーホワイト */
+      --text-color: #383531;      /* 落ち着いたダークブラウン */
+      --text-sub: #78736a;       /* 柔らかいサブテキストカラー */
+      --accent-color: #8c6d53;    /* アースブラウン */
+      --accent-light: #e8dfd5;    /* ナチュラルハイライト */
+      --shadow-sm: 0 4px 15px rgba(140, 109, 83, 0.06);
+      --shadow-hover: 0 12px 28px rgba(140, 109, 83, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* アニメーション定義 */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); opacity: 0.85; }
+      50% { transform: scale(1.05); opacity: 1; }
+    }
+
+    /* ヘッダーデザイン */
+    header {
+      background: linear-gradient(135deg, #f2eae1 0%, #e8dfd5 100%);
+      padding: 3.5rem 1.5rem;
+      text-align: center;
+      border-bottom: 1px solid var(--accent-light);
+      animation: fadeInUp 0.8s ease-out forwards;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--accent-color);
+      color: #fff;
+      font-size: 0.8rem;
+      padding: 0.25rem 0.9rem;
+      border-radius: 20px;
+      margin-bottom: 0.8rem;
+      letter-spacing: 0.05em;
+      animation: pulseGlow 3s infinite ease-in-out;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      color: var(--text-color);
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    header p {
+      color: var(--text-sub);
+      font-size: 0.95rem;
+    }
+
+    /* コンテナ */
+    .container {
+      max-width: 800px;
+      margin: 2.5rem auto;
+      padding: 0 1.5rem;
+    }
+
+    /* カードのレイアウト */
+    .card-grid {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.8rem;
+      border: 1px solid rgba(220, 210, 200, 0.5);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+      opacity: 0;
+      animation: fadeInUp 0.8s ease-out forwards;
+    }
+
+    /* 順番にふわっと浮き出る設定 */
+    .card:nth-child(1) { animation-delay: 0.2s; }
+    .card:nth-child(2) { animation-delay: 0.4s; }
+    .card:nth-child(3) { animation-delay: 0.6s; }
+
+    /* カードのホバーアニメーション */
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-hover);
+      border-color: var(--accent-color);
+    }
+
+    .card h2 {
+      font-size: 1.3rem;
+      color: var(--accent-color);
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card p {
+      color: var(--text-color);
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+
+    /* チェックリスト */
+    .study-list {
+      list-style: none;
+    }
+
+    .study-list li {
+      position: relative;
+      padding-left: 1.5rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.93rem;
+    }
+
+    .study-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--accent-color);
+      font-weight: bold;
+    }
+
+    /* プログレスバーアニメーション */
+    .progress-box {
+      margin-top: 1rem;
+      background: var(--accent-light);
+      border-radius: 10px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--accent-color);
+      width: 0%;
+      border-radius: 10px;
+      animation: fillBar 1.5s 0.8s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+    }
+
+    @keyframes fillBar {
+      to { width: 80%; }
+    }
+
+    /* フッター */
+    footer {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      color: var(--text-sub);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--accent-light);
+      margin-top: 3rem;
+    }
+  </style>
 </head>
 <body>
-  <main class="container">
-    <header>
-      <h1>📚 yuitoの勉強ノート</h1>
-      <p>日々の学びや気になる技術をまとめていくサイトです。</p>
-    </header>
 
-    <hr>
+  <header>
+    <span class="badge">MY STUDY LOG</span>
+    <h1>yuitoの勉強ノート</h1>
+    <p>日々の学びと成長を優しく書きとめるナレッジスペース</p>
+  </header>
 
-    <section>
-      <h2>今日学んだこと</h2>
-      <article>
-        <h3>GitHub Pagesの公開</h3>
-        <p>GitHub Pagesを使って、完全に無料で自分だけのWebサイトを開設しました！</p>
-        <ul>
-          <li>リポジトリの作成方法</li>
-          <li>index.htmlの編集と保存</li>
-          <li>CSSを使ったデザインの適用</li>
+  <div class="container">
+    <div class="card-grid">
+      
+      <div class="card">
+        <h2>📖 今日の学習テーマ</h2>
+        <p>GitHub Pagesで作成したWebサイトを、ナチュラルな生成り色の落ち着いたデザインへリニューアルしました。</p>
+        <div class="progress-box">
+          <div class="progress-bar"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>✨ 実装したアニメーション</h2>
+        <p>画面を開いたときや操作したときに心地よく動くエフェクトを盛り込みました。</p>
+        <ul class="study-list">
+          <li>画面読み込み時にカードがふわっと浮き出る登場エフェクト</li>
+          <li>マウスポインターを載せると優しく動くホバーアクション</li>
+          <li>滑らかに伸びる学習進捗プログレスバー</li>
         </ul>
-      </article>
-    </section>
+      </div>
 
-    <section>
-      <h2>今後の目標</h2>
-      <article>
-        <p>記事を増やしたり、テーマごとにページを分けて本格的な学習サイトに育てていきます。</p>
-      </article>
-    </section>
+      <div class="card">
+        <h2>🚀 これからの計画</h2>
+        <p>ノートの内容や画像を追加して、自分だけの素敵な学習サイトに育てていきます。</p>
+      </div>
 
-    <footer>
-      <small>&copy; 2026 yuito</small>
-    </footer>
-  </main>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 yuito | Created with GitHub Pages</p>
+  </footer>
+
 </body>
 </html>
