@@ -4,90 +4,41 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>yuitoの勉強ノート</title>
-  <style>
-    /* 全体のスタイル */
-    body {
-      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif;
-      line-height: 1.6;
-      color: #333;
-      background-color: #f5f7fa;
-      margin: 0;
-      padding: 0;
-    }
-
-    /* ヘッダー */
-    header {
-      background-color: #4a90e2;
-      color: #fff;
-      text-align: center;
-      padding: 2rem 1rem;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 1.8rem;
-    }
-
-    /* メインコンテンツ枠 */
-    .container {
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-
-    /* カード型の記事枠 */
-    .card {
-      background: #fff;
-      border-radius: 8px;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    }
-
-    .card h2 {
-      margin-top: 0;
-      color: #4a90e2;
-      border-bottom: 2px solid #eef2f5;
-      padding-bottom: 0.5rem;
-    }
-
-    /* フッター */
-    footer {
-      text-align: center;
-      padding: 1rem;
-      color: #777;
-      font-size: 0.9rem;
-    }
-  </style>
+  <!-- 一行追加するだけでデザインが整う無料CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
 </head>
 <body>
+  <main class="container">
+    <header>
+      <h1>📚 yuitoの勉強ノート</h1>
+      <p>日々の学びや気になる技術をまとめていくサイトです。</p>
+    </header>
 
-  <header>
-    <h1>yuitoの勉強ノート</h1>
-    <p>日々の学習内容をまとめるWebサイト</p>
-  </header>
+    <hr>
 
-  <div class="container">
-    <div class="card">
-      <h2>今日の学習メモ</h2>
-      <p>GitHub Pagesを使って自分のWebサイトを作成しました！</p>
-      <ul>
-        <li>リポジトリの作成</li>
-        <li>index.htmlの編集</li>
-        <li>GitHub Pagesでの公開設定</li>
-      </ul>
-    </div>
+    <section>
+      <h2>今日学んだこと</h2>
+      <article>
+        <h3>GitHub Pagesの公開</h3>
+        <p>GitHub Pagesを使って、完全に無料で自分だけのWebサイトを開設しました！</p>
+        <ul>
+          <li>リポジトリの作成方法</li>
+          <li>index.htmlの編集と保存</li>
+          <li>CSSを使ったデザインの適用</li>
+        </ul>
+      </article>
+    </section>
 
-    <div class="card">
-      <h2>これから学びたいこと</h2>
-      <p>HTMLやCSSをもっと覚えて、使いやすい学習サイトにしていきます。</p>
-    </div>
-  </div>
+    <section>
+      <h2>今後の目標</h2>
+      <article>
+        <p>記事を増やしたり、テーマごとにページを分けて本格的な学習サイトに育てていきます。</p>
+      </article>
+    </section>
 
-  <footer>
-    <p>&copy; 2026 yuito. All rights reserved.</p>
-  </footer>
-
+    <footer>
+      <small>&copy; 2026 yuito</small>
+    </footer>
+  </main>
 </body>
 </html>
-
