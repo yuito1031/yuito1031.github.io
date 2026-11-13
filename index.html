@@ -1,2178 +1,1246 @@
 <!DOCTYPE html>
-<html lang="ja" class="light">
+<html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>漢字マスター (Kanji Master) - 漢字学習・検索・手書き練習</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Atelier Note - デジタルノート＆スケッチ</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Noto Sans JP & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Inter', 'Noto Sans JP', sans-serif;
+      overscroll-behavior: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
 
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            red: '#D97706',
-                            crimson: '#BE123C',
-                            indigo: '#4F46E5',
-                            slate: '#0F172A',
-                            paper: '#FAF8F5',
-                            paperDark: '#1E293B',
-                            gold: '#D97706',
-                            vermilion: '#E11D48'
-                        }
-                    },
-                    fontFamily: {
-                        jp: ['"Hiragino Sans"', '"Hiragino Kaku Gothic ProN"', '"Yu Gothic"', '"Meiryo"', 'sans-serif'],
-                        kanji: ['"Klee One"', '"Yu Mincho"', '"Hiragino Mincho ProN"', 'serif']
-                    }
-                }
-            }
-        };
-    </script>
+    /* キャンバス操作時のタッチスクロール・ズームを完全に防止 */
+    #drawing-canvas {
+      touch-action: none;
+      cursor: crosshair;
+    }
 
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts for Calligraphy feel -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    /* カスタムスクロールバー */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(156, 163, 175, 0.5);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(107, 114, 128, 0.8);
+    }
 
-    <style>
-        body {
-            font-family: 'Noto Sans JP', sans-serif;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        .kanji-font {
-            font-family: 'Klee One', 'Yu Mincho', serif;
-        }
-
-        /* 3D Flip Card Styles */
-        .perspective-1000 {
-            perspective: 1000px;
-        }
-        .transform-style-3d {
-            transform-style: preserve-3d;
-            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
-        }
-        .backface-hidden {
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-        }
-        .rotate-y-180 {
-            transform: rotateY(180deg);
-        }
-
-        /* Wafuu Pattern Accent Background */
-        .bg-washi-light {
-            background-color: #FAF8F5;
-            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
-            background-size: 16px 16px;
-        }
-        .bg-washi-dark {
-            background-color: #0F172A;
-            background-image: radial-gradient(#1e293b 1px, transparent 1px);
-            background-size: 16px 16px;
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(156, 163, 175, 0.5);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(107, 114, 128, 0.8);
-        }
-
-        /* Animated feedback shake */
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-8px); }
-            40%, 80% { transform: translateX(8px); }
-        }
-        .animate-shake {
-            animation: shake 0.4s ease-in-out;
-        }
-    </style>
+    /* レンジスライダーのカスタムスタイル */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 6px;
+      border-radius: 9999px;
+      background: #e5e7eb;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 16px;
+      width: 16px;
+      border-radius: 50%;
+      background: #3b82f6;
+      margin-top: -5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      transition: transform 0.1s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+  </style>
 </head>
+<body class="bg-stone-100 text-stone-800 h-screen w-screen overflow-hidden flex flex-col">
 
-<body class="bg-washi-light dark:bg-washi-dark text-slate-800 dark:text-slate-100 min-h-screen flex flex-col antialiased selection:bg-rose-500 selection:text-white">
+  <!-- トップヘッダー -->
+  <header class="h-14 bg-white border-b border-stone-200 px-3 sm:px-5 flex items-center justify-between shrink-0 z-20 shadow-sm">
+    <!-- 左側：サイドバートグル＆ノートタイトル -->
+    <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+      <button id="toggle-sidebar-btn" class="p-2 rounded-xl hover:bg-stone-100 text-stone-600 transition-colors" title="ノート一覧を開く">
+        <i data-lucide="panel-left" class="w-5 h-5"></i>
+      </button>
+      <div class="flex items-center gap-2 min-w-0 flex-1 max-w-md">
+        <i data-lucide="book-open" class="w-5 h-5 text-amber-600 shrink-0 hidden sm:block"></i>
+        <input
+          type="text"
+          id="note-title-input"
+          value="無題のノート"
+          placeholder="ノートのタイトルを入力..."
+          class="font-bold text-base sm:text-lg text-stone-800 bg-transparent border border-transparent hover:border-stone-200 focus:border-blue-500 focus:bg-stone-50 rounded-lg px-2 py-1 w-full truncate outline-none transition-all"
+        />
+      </div>
+    </div>
 
-    <!-- Header Section -->
-    <header class="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <!-- Brand Logo -->
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dictionary')">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-600 to-amber-600 flex items-center justify-center text-white shadow-md font-bold text-xl kanji-font">
-                    漢
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-rose-600 via-amber-600 to-indigo-600 bg-clip-text text-transparent">
-                        漢字マスター
-                    </h1>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium hidden sm:block">Kanji Master Interactive App</p>
-                </div>
-            </div>
+    <!-- 中央〜右側：保存ステータス＆アクションボタン -->
+    <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+      <!-- 保存ステータス表示 -->
+      <span id="save-status" class="text-xs text-stone-400 hidden md:inline-flex items-center gap-1 px-2 py-1 rounded-md bg-stone-50">
+        <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-500"></i>
+        <span>保存済み</span>
+      </span>
 
-            <!-- Top Desktop Navigation -->
-            <nav class="hidden md:flex items-center space-x-1">
-                <button onclick="switchTab('dictionary')" id="nav-dictionary" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center space-x-2 text-rose-600 bg-rose-50 dark:bg-rose-950/40">
-                    <i class="fa-solid fa-book-bookmark"></i>
-                    <span>漢字辞書</span>
-                </button>
-                <button onclick="switchTab('practice')" id="nav-practice" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center space-x-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
-                    <i class="fa-solid fa-pen-nib"></i>
-                    <span>手書き練習</span>
-                </button>
-                <button onclick="switchTab('flashcards')" id="nav-flashcards" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center space-x-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
-                    <i class="fa-solid fa-layer-group"></i>
-                    <span>暗記カード</span>
-                </button>
-                <button onclick="switchTab('quiz')" id="nav-quiz" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center space-x-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
-                    <i class="fa-solid fa-circle-question"></i>
-                    <span>クイズ</span>
-                </button>
-                <button onclick="switchTab('favorites')" id="nav-favorites" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center space-x-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
-                    <i class="fa-solid fa-heart text-rose-500"></i>
-                    <span>お気に入り (<span id="fav-count-badge">0</span>)</span>
-                </button>
-            </nav>
+      <!-- 手動保存ボタン -->
+      <button id="manual-save-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs sm:text-sm font-medium transition-colors" title="ブラウザに保存">
+        <i data-lucide="save" class="w-4 h-4"></i>
+        <span class="hidden sm:inline">保存</span>
+      </button>
 
-            <!-- Actions: Dark Mode & Counter -->
-            <div class="flex items-center space-x-3">
-                <button id="theme-toggle-btn" onclick="toggleTheme()" class="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors" title="テーマ切り替え">
-                    <i class="fa-solid fa-moon text-lg dark:hidden"></i>
-                    <i class="fa-solid fa-sun text-lg hidden dark:block text-amber-400"></i>
-                </button>
-            </div>
+      <!-- PNG書き出しボタン -->
+      <button id="export-png-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium shadow-sm transition-colors" title="背景付きでPNG画像として保存">
+        <i data-lucide="download" class="w-4 h-4"></i>
+        <span class="hidden sm:inline">PNG出力</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- メインコンテンツエリア -->
+  <div class="flex-1 flex overflow-hidden relative">
+
+    <!-- ノート一覧サイドバー（ドロワー形式） -->
+    <aside id="sidebar" class="w-72 bg-stone-50 border-r border-stone-200 flex flex-col shrink-0 z-30 absolute md:relative h-full transition-transform duration-300 ease-in-out -translate-x-full md:translate-x-0 shadow-xl md:shadow-none">
+      <div class="p-4 border-b border-stone-200 flex items-center justify-between">
+        <h2 class="font-bold text-sm text-stone-700 flex items-center gap-2">
+          <i data-lucide="notebook" class="w-4 h-4 text-amber-600"></i>
+          マイノート一覧
+        </h2>
+        <button id="close-sidebar-btn" class="p-1.5 rounded-lg hover:bg-stone-200 text-stone-500 md:hidden">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- 新規ノート作成ボタン -->
+      <div class="p-3">
+        <button id="new-note-btn" class="w-full py-2.5 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-medium text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>新しいノートを作成</span>
+        </button>
+      </div>
+
+      <!-- ノートリスト -->
+      <div id="notes-list" class="flex-1 overflow-y-auto px-3 pb-4 space-y-2">
+        <!-- JSで動的にノートカードを生成 -->
+      </div>
+
+      <div class="p-3 border-t border-stone-200 text-[11px] text-stone-400 text-center">
+        データはブラウザ内に自動保存されます
+      </div>
+    </aside>
+
+    <!-- サイドバー背景オーバーレイ（モバイル用） -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/30 z-20 hidden md:hidden backdrop-blur-[1px]"></div>
+
+    <!-- キャンバス＆ツールバー領域 -->
+    <main class="flex-1 flex flex-col min-w-0 bg-stone-200/70 relative overflow-hidden">
+
+      <!-- ツールバー（上部フローティング風） -->
+      <div class="bg-white/95 backdrop-blur-md border-b border-stone-200 px-3 py-2 flex flex-wrap items-center justify-between gap-2 z-10 shadow-sm">
+
+        <!-- 1. ペンの種類選択 -->
+        <div class="flex items-center gap-1 bg-stone-100 p-1 rounded-xl overflow-x-auto max-w-full" id="pen-tools">
+          <button data-tool="ballpoint" class="tool-btn active flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all" title="ボールペン：くっきり均一な線">
+            <i data-lucide="pen-tool" class="w-4 h-4"></i>
+            <span class="hidden lg:inline">ボールペン</span>
+          </button>
+          <button data-tool="fountain" class="tool-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all" title="万年筆：速度と筆圧で強弱がつく滑らかな線">
+            <i data-lucide="feather" class="w-4 h-4"></i>
+            <span class="hidden lg:inline">万年筆</span>
+          </button>
+          <button data-tool="pencil" class="tool-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all" title="鉛筆：ザラつきと濃淡のある質感">
+            <i data-lucide="pencil" class="w-4 h-4"></i>
+            <span class="hidden lg:inline">鉛筆</span>
+          </button>
+          <button data-tool="highlighter" class="tool-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all" title="蛍光マーカー：半透明で重ね塗り可能">
+            <i data-lucide="highlighter" class="w-4 h-4"></i>
+            <span class="hidden lg:inline">マーカー</span>
+          </button>
+          <button data-tool="brush" class="tool-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all" title="筆ペン：表現力豊かな太い毛筆タッチ">
+            <i data-lucide="brush" class="w-4 h-4"></i>
+            <span class="hidden lg:inline">筆ペン</span>
+          </button>
+          <div class="w-px h-5 bg-stone-300 mx-0.5"></div>
+          <button data-tool="eraser" class="tool-btn flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all" title="消しゴム：描画を消去">
+            <i data-lucide="eraser" class="w-4 h-4"></i>
+            <span class="hidden lg:inline">消しゴム</span>
+          </button>
         </div>
-    </header>
 
-    <!-- Main Container -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-8">
+        <!-- 2. カラーパレット＆太さ調整 -->
+        <div class="flex items-center gap-3 flex-wrap">
+          <!-- カラーパレット -->
+          <div class="flex items-center gap-1.5" id="color-palette">
+            <button data-color="#1e293b" class="color-btn w-6 h-6 rounded-full bg-slate-800 ring-2 ring-offset-2 ring-blue-500 transition-transform hover:scale-110" title="ブラック"></button>
+            <button data-color="#dc2626" class="color-btn w-6 h-6 rounded-full bg-red-600 transition-transform hover:scale-110" title="レッド"></button>
+            <button data-color="#2563eb" class="color-btn w-6 h-6 rounded-full bg-blue-600 transition-transform hover:scale-110" title="ブルー"></button>
+            <button data-color="#16a34a" class="color-btn w-6 h-6 rounded-full bg-green-600 transition-transform hover:scale-110" title="グリーン"></button>
+            <button data-color="#eab308" class="color-btn w-6 h-6 rounded-full bg-yellow-500 transition-transform hover:scale-110" title="イエロー"></button>
+            <button data-color="#9333ea" class="color-btn w-6 h-6 rounded-full bg-purple-600 transition-transform hover:scale-110" title="パープル"></button>
+            <button data-color="#ffffff" class="color-btn w-6 h-6 rounded-full bg-white border border-stone-300 transition-transform hover:scale-110" title="ホワイト（黒板・クラフト紙用）"></button>
+            <!-- カスタムカラーピッカー -->
+            <label class="relative w-6 h-6 rounded-full overflow-hidden border border-stone-300 cursor-pointer hover:scale-110 transition-transform flex items-center justify-center bg-gradient-to-tr from-pink-500 via-amber-400 to-cyan-500" title="カスタムカラーを選択">
+              <input type="color" id="custom-color-picker" value="#1e293b" class="opacity-0 absolute inset-0 w-full h-full cursor-pointer" />
+            </label>
+          </div>
 
-        <!-- ========================================== -->
-        <!-- VIEW 1: KANJI DICTIONARY / SEARCH -->
-        <!-- ========================================== -->
-        <section id="view-dictionary" class="space-y-6">
-            <!-- Search Header Box -->
-            <div class="bg-white dark:bg-slate-800/90 rounded-2xl p-5 shadow-sm border border-slate-200/80 dark:border-slate-700/80 backdrop-blur">
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    <!-- Text Search Input -->
-                    <div class="md:col-span-6 relative">
-                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="search-input" placeholder="漢字、読み（ひらがな・カタカナ・ローマ字）、意味で検索..."
-                            class="w-full pl-11 pr-10 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500 transition"
-                            oninput="renderDictionary()">
-                        <button id="search-clear-btn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                            <i class="fa-solid fa-circle-xmark"></i>
-                        </button>
-                    </div>
+          <div class="w-px h-5 bg-stone-200 hidden sm:block"></div>
 
-                    <!-- JLPT Filter -->
-                    <div class="md:col-span-3">
-                        <select id="filter-jlpt" onchange="renderDictionary()" class="w-full py-3 px-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500 transition font-medium">
-                            <option value="ALL">すべての JLPT レベル</option>
-                            <option value="N5">JLPT N5 (初級)</option>
-                            <option value="N4">JLPT N4 (初中級)</option>
-                            <option value="N3">JLPT N3 (中級)</option>
-                            <option value="N2">JLPT N2 (上中級)</option>
-                            <option value="N1">JLPT N1 (上級)</option>
-                        </select>
-                    </div>
+          <!-- 太さスライダー -->
+          <div class="flex items-center gap-2 bg-stone-50 px-2.5 py-1 rounded-xl border border-stone-200">
+            <span id="size-preview-dot" class="w-2 h-2 rounded-full bg-slate-800 inline-block shrink-0"></span>
+            <input type="range" id="pen-size-slider" min="1" max="40" value="3" class="w-20 sm:w-24" title="ペンの太さ" />
+            <span id="pen-size-label" class="text-xs font-mono text-stone-600 w-6 text-right">3px</span>
+          </div>
+        </div>
 
-                    <!-- Grade Filter -->
-                    <div class="md:col-span-3">
-                        <select id="filter-grade" onchange="renderDictionary()" class="w-full py-3 px-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500 transition font-medium">
-                            <option value="ALL">すべての学年</option>
-                            <option value="小1">小学1年生</option>
-                            <option value="小2">小学2年生</option>
-                            <option value="小3">小学3年生</option>
-                            <option value="小4">小学4年生</option>
-                            <option value="小5">小学5年生</option>
-                            <option value="小6">小学6年生</option>
-                            <option value="常用">常用漢字</option>
-                        </select>
-                    </div>
-                </div>
+        <!-- 3. 紙の種類選択＆操作履歴（Undo/Redo/Clear） -->
+        <div class="flex items-center gap-2 ml-auto sm:ml-0">
+          <!-- 紙の種類ドロップダウン -->
+          <div class="relative flex items-center">
+            <i data-lucide="file-text" class="w-4 h-4 text-stone-500 absolute left-2.5 pointer-events-none"></i>
+            <select id="paper-type-select" class="pl-8 pr-7 py-1.5 bg-stone-100 hover:bg-stone-200/80 text-stone-700 text-xs font-medium rounded-xl border border-stone-200 outline-none cursor-pointer transition-colors appearance-none">
+              <option value="plain">無地（ホワイト）</option>
+              <option value="ruled">罫線（横罫ノート）</option>
+              <option value="grid">方眼（5mmグリッド）</option>
+              <option value="dot">ドット方眼</option>
+              <option value="kraft">クラフト紙（茶色）</option>
+              <option value="dark">ダーク（黒板風）</option>
+            </select>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-stone-500 absolute right-2.5 pointer-events-none"></i>
+          </div>
 
-                <!-- Active Filters & Stats Bar -->
-                <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex flex-wrap items-center justify-between text-xs text-slate-500 dark:text-slate-400 gap-2">
-                    <div class="flex items-center space-x-2">
-                        <span>該当結果: <strong id="search-count" class="text-rose-600 dark:text-rose-400 font-bold text-sm">0</strong> 文字</span>
-                    </div>
-                    <div class="flex items-center space-x-3">
-                        <span class="font-medium">並び替え:</span>
-                        <button onclick="setSort('default')" id="sort-default" class="hover:text-rose-600 font-bold text-rose-600 underline">標準</button>
-                        <button onclick="setSort('strokes')" id="sort-strokes" class="hover:text-rose-600">画数順</button>
-                        <button onclick="setSort('jlpt')" id="sort-jlpt" class="hover:text-rose-600">JLPT順</button>
-                    </div>
-                </div>
-            </div>
+          <!-- Undo / Redo / Clear -->
+          <div class="flex items-center bg-stone-100 p-1 rounded-xl">
+            <button id="undo-btn" class="p-1.5 rounded-lg hover:bg-white text-stone-600 disabled:opacity-30 disabled:hover:bg-transparent transition-all" title="元に戻す (Ctrl+Z)" disabled>
+              <i data-lucide="undo-2" class="w-4 h-4"></i>
+            </button>
+            <button id="redo-btn" class="p-1.5 rounded-lg hover:bg-white text-stone-600 disabled:opacity-30 disabled:hover:bg-transparent transition-all" title="やり直す (Ctrl+Y)" disabled>
+              <i data-lucide="redo-2" class="w-4 h-4"></i>
+            </button>
+            <div class="w-px h-4 bg-stone-300 mx-1"></div>
+            <button id="clear-btn" class="p-1.5 rounded-lg hover:bg-red-50 text-stone-600 hover:text-red-600 transition-all" title="ページを全消去">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
 
-            <!-- Kanji Card Grid -->
-            <div id="kanji-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                <!-- Dynamic cards populated by JS -->
-            </div>
+      </div>
 
-            <!-- Empty Search State -->
-            <div id="empty-search-state" class="hidden text-center py-16 bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
-                <i class="fa-solid fa-magnifying-glass text-4xl text-slate-300 dark:text-slate-600 mb-3"></i>
-                <p class="text-slate-500 dark:text-slate-400 font-medium">該当する漢字が見つかりませんでした。</p>
-                <button onclick="resetFilters()" class="mt-3 px-4 py-2 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg text-sm font-semibold hover:bg-rose-200 transition">
-                    条件をリセット
-                </button>
-            </div>
-        </section>
-
-
-        <!-- ========================================== -->
-        <!-- VIEW 2: HANDWRITING PRACTICE CANVAS -->
-        <!-- ========================================== -->
-        <section id="view-practice" class="hidden space-y-6">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                
-                <!-- Left Control Panel & Kanji Selector -->
-                <div class="lg:col-span-4 bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 space-y-5">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">練習する漢字の選択</label>
-                        <div class="flex items-center space-x-2">
-                            <select id="practice-kanji-select" onchange="selectPracticeKanji(this.value)" class="w-full py-2.5 px-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-bold text-lg focus:outline-none focus:ring-2 focus:ring-rose-500">
-                                <!-- Populated dynamically -->
-                            </select>
-                            <button onclick="prevPracticeKanji()" class="p-2.5 bg-slate-100 dark:bg-slate-700 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition" title="前の漢字">
-                                <i class="fa-solid fa-chevron-left"></i>
-                            </button>
-                            <button onclick="nextPracticeKanji()" class="p-2.5 bg-slate-100 dark:bg-slate-700 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition" title="次の漢字">
-                                <i class="fa-solid fa-chevron-right"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Target Kanji Mini Card -->
-                    <div id="practice-kanji-card" class="bg-slate-50 dark:bg-slate-900/70 rounded-xl p-4 border border-slate-200 dark:border-slate-700 text-center">
-                        <div class="text-6xl font-bold kanji-font text-slate-900 dark:text-slate-50 mb-2" id="p-card-kanji">日</div>
-                        <div class="text-sm font-semibold text-rose-600 dark:text-rose-400 mb-1" id="p-card-readings">ニチ / ひ</div>
-                        <div class="text-xs text-slate-500 dark:text-slate-400" id="p-card-meaning">Sun, day, Japan</div>
-                        <div class="mt-3 flex items-center justify-center space-x-3 text-xs text-slate-400">
-                            <span id="p-card-strokes"><i class="fa-solid fa-pen-line"></i> 4画</span>
-                            <span id="p-card-jlpt" class="px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 font-semibold">N5</span>
-                            <button onclick="speakKanjiCurrentPractice()" class="p-1 text-slate-500 hover:text-rose-600" title="音声再生">
-                                <i class="fa-solid fa-volume-high text-sm"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Canvas Controls -->
-                    <div class="space-y-4">
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">筆の設定</label>
-                        
-                        <!-- Color Palette -->
-                        <div>
-                            <span class="text-xs text-slate-500 dark:text-slate-400 mb-1 block">筆の色</span>
-                            <div class="flex items-center space-x-3">
-                                <button onclick="setBrushColor('#0f172a')" class="w-8 h-8 rounded-full bg-slate-900 border-2 border-white dark:border-slate-700 shadow ring-2 ring-rose-500 color-btn" data-color="#0f172a"></button>
-                                <button onclick="setBrushColor('#be123c')" class="w-8 h-8 rounded-full bg-rose-700 border-2 border-white dark:border-slate-700 shadow color-btn" data-color="#be123c"></button>
-                                <button onclick="setBrushColor('#4f46e5')" class="w-8 h-8 rounded-full bg-indigo-600 border-2 border-white dark:border-slate-700 shadow color-btn" data-color="#4f46e5"></button>
-                                <button onclick="setBrushColor('#d97706')" class="w-8 h-8 rounded-full bg-amber-600 border-2 border-white dark:border-slate-700 shadow color-btn" data-color="#d97706"></button>
-                                <button onclick="toggleEraser()" id="eraser-btn" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 text-xs font-semibold flex items-center space-x-1 hover:bg-slate-200 transition">
-                                    <i class="fa-solid fa-eraser"></i>
-                                    <span>消しゴム</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Stroke Size -->
-                        <div>
-                            <div class="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
-                                <span>線の太さ</span>
-                                <span id="brush-size-text">12px</span>
-                            </div>
-                            <input type="range" id="brush-size" min="4" max="28" value="12" oninput="setBrushSize(this.value)" class="w-full accent-rose-600">
-                        </div>
-
-                        <!-- Guide Toggle -->
-                        <div class="pt-2 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
-                            <span class="text-sm font-medium text-slate-700 dark:text-slate-300">薄い下書きガイド表示</span>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="guide-toggle" checked onchange="toggleGuide(this.checked)" class="sr-only peer">
-                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:peer-focus:ring-rose-800 peer-checked:bg-rose-600"></div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right Canvas Area -->
-                <div class="lg:col-span-8 flex flex-col items-center space-y-4">
-                    <!-- Canvas Box with 田字格 background -->
-                    <div class="relative w-full max-w-md aspect-square bg-white dark:bg-slate-900 rounded-2xl shadow-md border-2 border-slate-300 dark:border-slate-700 overflow-hidden flex items-center justify-center">
-                        
-                        <!-- Background Grid Overlay (田字格) -->
-                        <svg class="absolute inset-0 w-full h-full pointer-events-none stroke-slate-200 dark:stroke-slate-800" stroke-width="1.5" stroke-dasharray="6,6">
-                            <!-- Horizontal Center Line -->
-                            <line x1="0" y1="50%" x2="100%" y2="50%" />
-                            <!-- Vertical Center Line -->
-                            <line x1="50%" y1="0" x2="50%" y2="100%" />
-                            <!-- Diagonal lines -->
-                            <line x1="0" y1="0" x2="100%" y2="100%" stroke-width="0.8" stroke-dasharray="3,3" class="opacity-40" />
-                            <line x1="100%" y1="0" x2="0" y2="100%" stroke-width="0.8" stroke-dasharray="3,3" class="opacity-40" />
-                        </svg>
-
-                        <!-- Tracing Guide Kanji Text Watermark -->
-                        <div id="canvas-watermark" class="absolute inset-0 flex items-center justify-center font-bold kanji-font text-slate-300/40 dark:text-slate-700/50 pointer-events-none select-none text-[220px]">
-                            日
-                        </div>
-
-                        <!-- Main Interactive Canvas -->
-                        <canvas id="practice-canvas" class="w-full h-full relative z-10 cursor-crosshair touch-none"></canvas>
-                    </div>
-
-                    <!-- Canvas Actions Bar -->
-                    <div class="flex items-center space-x-3 w-full max-w-md">
-                        <button onclick="undoStroke()" class="flex-1 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-sm transition flex items-center justify-center space-x-2">
-                            <i class="fa-solid fa-rotate-left"></i>
-                            <span>1画戻す</span>
-                        </button>
-                        <button onclick="clearCanvas()" class="flex-1 py-3 bg-rose-100 dark:bg-rose-950/40 hover:bg-rose-200 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 font-bold rounded-xl text-sm transition flex items-center justify-center space-x-2">
-                            <i class="fa-solid fa-trash-can"></i>
-                            <span>全消去</span>
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-
-        <!-- ========================================== -->
-        <!-- VIEW 3: FLASHCARDS (3D FLIP CARD) -->
-        <!-- ========================================== -->
-        <section id="view-flashcard" class="hidden space-y-6 max-w-2xl mx-auto">
-            
-            <!-- Flashcard Header Bar -->
-            <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <select id="flashcard-deck-select" onchange="initFlashcards()" class="py-2 px-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-800 dark:text-slate-100">
-                        <option value="ALL">デッキ: すべての漢字</option>
-                        <option value="N5">デッキ: JLPT N5</option>
-                        <option value="N4">デッキ: JLPT N4</option>
-                        <option value="N3">デッキ: JLPT N3</option>
-                        <option value="FAV">デッキ: お気に入りのみ</option>
-                    </select>
-                </div>
-
-                <div class="flex items-center space-x-2">
-                    <button onclick="shuffleFlashcards()" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl text-xs font-bold transition flex items-center space-x-1" title="シャッフル">
-                        <i class="fa-solid fa-shuffle"></i>
-                        <span class="hidden sm:inline">シャッフル</span>
-                    </button>
-                    <button onclick="initFlashcards()" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl text-xs font-bold transition flex items-center space-x-1" title="リセット">
-                        <i class="fa-solid fa-rotate"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Progress Meter -->
-            <div class="space-y-1">
-                <div class="flex justify-between text-xs font-semibold text-slate-500 dark:text-slate-400">
-                    <span>学習進捗: <span id="fc-progress-text">0 / 0</span></span>
-                    <span>習得率: <span id="fc-percent-text">0%</span></span>
-                </div>
-                <div class="w-full bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
-                    <div id="fc-progress-bar" class="bg-gradient-to-r from-amber-500 to-rose-600 h-full w-0 transition-all duration-300"></div>
-                </div>
-            </div>
-
-            <!-- 3D Flip Card Container -->
-            <div class="perspective-1000 w-full aspect-[4/3] sm:aspect-[16/10] cursor-pointer" onclick="flipCard()">
-                <div id="flashcard-inner" class="transform-style-3d relative w-full h-full rounded-3xl shadow-xl bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 p-8 flex flex-col items-center justify-between">
-                    
-                    <!-- FRONT OF CARD -->
-                    <div class="backface-hidden absolute inset-0 p-8 flex flex-col items-center justify-between text-center">
-                        <div class="w-full flex justify-between items-center text-xs text-slate-400 font-semibold">
-                            <span id="fc-front-jlpt" class="px-2.5 py-1 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400">N5</span>
-                            <span>タップして裏返す <i class="fa-solid fa-rotate text-slate-400"></i></span>
-                        </div>
-
-                        <div class="my-auto">
-                            <div id="fc-front-kanji" class="text-8xl sm:text-9xl font-bold kanji-font text-slate-900 dark:text-slate-50">日</div>
-                            <div id="fc-front-strokes" class="mt-2 text-xs text-slate-400">4 画</div>
-                        </div>
-
-                        <div class="text-xs text-slate-400 flex items-center space-x-1">
-                            <i class="fa-solid fa-lightbulb text-amber-500"></i>
-                            <span>ヒント: クリックで読みと意味を表示</span>
-                        </div>
-                    </div>
-
-                    <!-- BACK OF CARD -->
-                    <div class="backface-hidden rotate-y-180 absolute inset-0 p-6 sm:p-8 flex flex-col justify-between bg-gradient-to-br from-slate-50 to-rose-50/30 dark:from-slate-800 dark:to-slate-900 rounded-3xl text-left overflow-y-auto">
-                        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
-                            <div>
-                                <span id="fc-back-kanji" class="text-3xl font-bold kanji-font text-rose-600 dark:text-rose-400">日</span>
-                                <span id="fc-back-radical" class="ml-2 text-xs text-slate-500 dark:text-slate-400">部首: 日</span>
-                            </div>
-                            <button onclick="event.stopPropagation(); speakKanjiCurrentFlashcard();" class="p-2 rounded-full bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-300 hover:scale-105 transition" title="音声再生">
-                                <i class="fa-solid fa-volume-high"></i>
-                            </button>
-                        </div>
-
-                        <!-- Card Details Content -->
-                        <div class="space-y-3 my-2 text-sm">
-                            <div>
-                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">音読み / 訓読み</span>
-                                <div class="font-bold text-slate-800 dark:text-slate-100 text-base" id="fc-back-readings">ニチ、ジツ / ひ、か</div>
-                            </div>
-                            <div>
-                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">意味</span>
-                                <div class="font-medium text-slate-700 dark:text-slate-200" id="fc-back-meaning">Sun, day, Japan</div>
-                            </div>
-                            <div id="fc-back-example-box" class="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
-                                <span class="text-xs font-bold text-slate-400 block mb-1">代表的な単語</span>
-                                <div id="fc-back-example" class="text-xs text-slate-600 dark:text-slate-300">日本 (にほん) - Japan</div>
-                            </div>
-                        </div>
-
-                        <div class="text-center text-xs text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-700">
-                            タップで表に戻る
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- Review Actions Buttons -->
-            <div class="flex items-center space-x-4 pt-2">
-                <button onclick="rateFlashcard(false)" class="flex-1 py-4 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 font-bold rounded-2xl transition flex items-center justify-center space-x-2 shadow-sm">
-                    <i class="fa-solid fa-xmark text-rose-500"></i>
-                    <span>もう一度 (Review)</span>
-                </button>
-                <button onclick="rateFlashcard(true)" class="flex-1 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-2xl transition flex items-center justify-center space-x-2 shadow-md">
-                    <i class="fa-solid fa-check"></i>
-                    <span>覚えた! (Mastered)</span>
-                </button>
-            </div>
-        </section>
-
-
-        <!-- ========================================== -->
-        <!-- VIEW 4: KANJI QUIZ -->
-        <!-- ========================================== -->
-        <section id="view-quiz" class="hidden space-y-6 max-w-2xl mx-auto">
-            
-            <!-- Quiz Start Setup Screen -->
-            <div id="quiz-setup-card" class="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-700 text-center space-y-6">
-                <div class="w-16 h-16 bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center text-3xl mx-auto">
-                    <i class="fa-solid fa-circle-question"></i>
-                </div>
-                <div>
-                    <h2 class="text-2xl font-bold tracking-tight">漢字クイズチャレンジ</h2>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">漢字の意味や読み方を楽しくマスターしましょう！</p>
-                </div>
-
-                <div class="space-y-4 text-left max-w-md mx-auto">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">クイズ形式</label>
-                        <select id="quiz-type-select" class="w-full py-3 px-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-semibold text-slate-800 dark:text-slate-100">
-                            <option value="meaning">漢字の意味を当てる (Meaning Quiz)</option>
-                            <option value="reading">漢字の読みを当てる (Reading Quiz)</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">問題数</label>
-                        <select id="quiz-count-select" class="w-full py-3 px-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-semibold text-slate-800 dark:text-slate-100">
-                            <option value="5">5 問チャレンジ</option>
-                            <option value="10" selected>10 問チャレンジ</option>
-                            <option value="20">20 問チャレンジ</option>
-                        </select>
-                    </div>
-                </div>
-
-                <button onclick="startQuiz()" class="w-full max-w-md py-4 bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-bold rounded-2xl text-lg shadow-lg transition transform hover:-translate-y-0.5">
-                    クイズを始める
-                </button>
-            </div>
-
-            <!-- Active Quiz Screen -->
-            <div id="quiz-active-card" class="hidden space-y-6">
-                <!-- Top Status Bar -->
-                <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-between text-sm font-bold">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-slate-400">問題:</span>
-                        <span id="quiz-progress-text" class="text-rose-600 dark:text-rose-400">1 / 10</span>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center space-x-1 text-amber-500">
-                            <i class="fa-solid fa-fire"></i>
-                            <span id="quiz-streak">0 連続</span>
-                        </div>
-                        <div class="flex items-center space-x-1 text-indigo-600 dark:text-indigo-400">
-                            <i class="fa-solid fa-trophy"></i>
-                            <span id="quiz-score">0 点</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Main Question Box -->
-                <div id="quiz-question-box" class="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-700 text-center space-y-4 relative overflow-hidden">
-                    <span id="quiz-prompt-label" class="text-xs font-bold text-slate-400 uppercase tracking-wider block">この漢字の意味は？</span>
-                    <div id="quiz-kanji-display" class="text-8xl font-bold kanji-font text-slate-900 dark:text-slate-50 my-4">山</div>
-                    <button onclick="speakQuizKanji()" class="p-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200" title="音声再生">
-                        <i class="fa-solid fa-volume-high"></i>
-                    </button>
-                </div>
-
-                <!-- 4 Options Grid -->
-                <div id="quiz-options-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <!-- Dynamic option buttons -->
-                </div>
-            </div>
-
-            <!-- Quiz Result Summary Card -->
-            <div id="quiz-result-card" class="hidden bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-200 dark:border-slate-700 text-center space-y-6">
-                <div id="quiz-result-icon" class="w-20 h-20 bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 rounded-full flex items-center justify-center text-4xl mx-auto">
-                    🏆
-                </div>
-                <div>
-                    <h2 class="text-2xl font-bold">クイズ結果</h2>
-                    <p id="quiz-result-subtitle" class="text-slate-500 dark:text-slate-400 text-sm mt-1">素晴らしいチャレンジでした！</p>
-                </div>
-
-                <div class="bg-slate-50 dark:bg-slate-900/60 p-6 rounded-2xl grid grid-cols-2 gap-4 text-center">
-                    <div>
-                        <div class="text-xs font-bold text-slate-400 uppercase">スコア</div>
-                        <div id="result-final-score" class="text-3xl font-extrabold text-rose-600 dark:text-rose-400 mt-1">100点</div>
-                    </div>
-                    <div>
-                        <div class="text-xs font-bold text-slate-400 uppercase">最大連続正解</div>
-                        <div id="result-max-streak" class="text-3xl font-extrabold text-amber-500 mt-1">5回</div>
-                    </div>
-                </div>
-
-                <button onclick="resetQuizToSetup()" class="w-full py-4 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-2xl text-lg shadow-lg transition">
-                    もう一度挑戦する
-                </button>
-            </div>
-
-        </section>
-
-
-        <!-- ========================================== -->
-        <!-- VIEW 5: FAVORITES -->
-        <!-- ========================================== -->
-        <section id="view-favorites" class="hidden space-y-6">
-            <div class="flex items-center justify-between bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-                <div>
-                    <h2 class="text-xl font-bold flex items-center space-x-2">
-                        <i class="fa-solid fa-heart text-rose-500"></i>
-                        <span>お気に入り漢字一覧</span>
-                    </h2>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">保存した漢字をまとめて復習できます</p>
-                </div>
-
-                <div class="flex items-center space-x-2">
-                    <button onclick="startFavoritesFlashcards()" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl transition flex items-center space-x-2">
-                        <i class="fa-solid fa-layer-group"></i>
-                        <span>暗記カードで復習</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Favorites Grid -->
-            <div id="favorites-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                <!-- Dynamically populated -->
-            </div>
-
-            <!-- Favorites Empty State -->
-            <div id="empty-fav-state" class="hidden text-center py-16 bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
-                <i class="fa-regular fa-heart text-5xl text-slate-300 dark:text-slate-600 mb-3"></i>
-                <p class="text-slate-500 dark:text-slate-400 font-medium">お気に入りに登録された漢字がありません。</p>
-                <p class="text-xs text-slate-400 mt-1">漢字カードのハートマークをクリックして登録できます。</p>
-            </div>
-        </section>
+      <!-- キャンバスコンテナ（中央配置・余白あり） -->
+      <div id="canvas-wrapper" class="flex-1 p-2 sm:p-5 md:p-6 flex items-center justify-center overflow-hidden relative">
+        <!-- ノート用紙本体（2層レイヤー構造：背景紙レイヤー + 描画レイヤー） -->
+        <div id="paper-sheet" class="relative w-full h-full max-w-5xl bg-white rounded-2xl shadow-lg border border-stone-300/80 overflow-hidden transition-colors duration-300">
+          <!-- 背景パターン描画用キャンバス -->
+          <canvas id="bg-canvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+          <!-- インク描画用キャンバス -->
+          <canvas id="drawing-canvas" class="absolute inset-0 w-full h-full"></canvas>
+        </div>
+      </div>
 
     </main>
+  </div>
 
-
-    <!-- ========================================== -->
-    <!-- MOBILE BOTTOM NAVIGATION -->
-    <!-- ========================================== -->
-    <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-2 py-2 flex items-center justify-around shadow-lg">
-        <button onclick="switchTab('dictionary')" id="mobile-nav-dictionary" class="flex flex-col items-center py-1 px-3 text-rose-600">
-            <i class="fa-solid fa-book-bookmark text-lg"></i>
-            <span class="text-[10px] font-bold mt-1">辞書</span>
-        </button>
-        <button onclick="switchTab('practice')" id="mobile-nav-practice" class="flex flex-col items-center py-1 px-3 text-slate-400">
-            <i class="fa-solid fa-pen-nib text-lg"></i>
-            <span class="text-[10px] font-bold mt-1">練習</span>
-        </button>
-        <button onclick="switchTab('flashcards')" id="mobile-nav-flashcards" class="flex flex-col items-center py-1 px-3 text-slate-400">
-            <i class="fa-solid fa-layer-group text-lg"></i>
-            <span class="text-[10px] font-bold mt-1">カード</span>
-        </button>
-        <button onclick="switchTab('quiz')" id="mobile-nav-quiz" class="flex flex-col items-center py-1 px-3 text-slate-400">
-            <i class="fa-solid fa-circle-question text-lg"></i>
-            <span class="text-[10px] font-bold mt-1">クイズ</span>
-        </button>
-        <button onclick="switchTab('favorites')" id="mobile-nav-favorites" class="flex flex-col items-center py-1 px-3 text-slate-400">
-            <i class="fa-solid fa-heart text-lg"></i>
-            <span class="text-[10px] font-bold mt-1">お気に入り</span>
-        </button>
-    </div>
-
-
-    <!-- ========================================== -->
-    <!-- KANJI DETAIL MODAL -->
-    <!-- ========================================== -->
-    <div id="kanji-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity">
-        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 dark:border-slate-700 p-6 sm:p-8 relative space-y-6">
-            
-            <!-- Close Button -->
-            <button onclick="closeModal()" class="absolute top-5 right-5 w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
-
-            <!-- Top Kanji Header Info -->
-            <div class="flex items-start space-x-6">
-                <div class="relative">
-                    <div id="modal-kanji-big" class="w-28 h-28 bg-gradient-to-br from-rose-50 to-amber-50 dark:from-slate-900 dark:to-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-center text-7xl font-bold kanji-font text-slate-900 dark:text-slate-50 shadow-inner">
-                        日
-                    </div>
-                    <button onclick="speakModalKanji()" class="absolute -bottom-2 -right-2 w-9 h-9 rounded-full bg-rose-600 text-white flex items-center justify-center shadow-md hover:scale-105 transition" title="読み上げ">
-                        <i class="fa-solid fa-volume-high text-sm"></i>
-                    </button>
-                </div>
-
-                <div class="flex-1 space-y-2">
-                    <div class="flex items-center justify-between">
-                        <span id="modal-jlpt" class="px-3 py-1 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 font-bold text-xs">JLPT N5</span>
-                        <button id="modal-fav-btn" onclick="toggleFavoriteFromModal()" class="text-slate-300 hover:text-rose-500 text-2xl transition">
-                            <i class="fa-solid fa-heart"></i>
-                        </button>
-                    </div>
-
-                    <div>
-                        <span id="modal-grade" class="text-xs font-semibold text-slate-400 block">小学1年生</span>
-                        <h3 id="modal-meaning-main" class="text-lg font-bold text-slate-800 dark:text-slate-100">Sun, day, Japan</h3>
-                    </div>
-
-                    <div class="flex items-center space-x-4 text-xs text-slate-500 dark:text-slate-400 pt-1">
-                        <span>画数: <strong id="modal-strokes" class="text-slate-800 dark:text-slate-200">4画</strong></span>
-                        <span>部首: <strong id="modal-radical" class="text-slate-800 dark:text-slate-200">日 (ひ)</strong></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Readings Grid -->
-            <div class="bg-slate-50 dark:bg-slate-900/70 rounded-2xl p-4 border border-slate-200 dark:border-slate-700/80 space-y-3">
-                <div class="flex items-start">
-                    <span class="w-20 text-xs font-bold text-slate-400 uppercase tracking-wider py-1">音読み</span>
-                    <div id="modal-onyomi" class="flex-1 font-bold text-slate-800 dark:text-slate-100 text-sm py-1">ニチ、ジツ</div>
-                </div>
-                <div class="flex items-start border-t border-slate-200/60 dark:border-slate-800 pt-2">
-                    <span class="w-20 text-xs font-bold text-slate-400 uppercase tracking-wider py-1">訓読み</span>
-                    <div id="modal-kunyomi" class="flex-1 font-bold text-slate-800 dark:text-slate-100 text-sm py-1">ひ、-び、か</div>
-                </div>
-            </div>
-
-            <!-- Example Words List -->
-            <div>
-                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">例文・関連単語</h4>
-                <div id="modal-examples-list" class="space-y-2">
-                    <!-- Dynamic Examples -->
-                </div>
-            </div>
-
-            <!-- Modal Action Buttons -->
-            <div class="pt-2 flex items-center space-x-3">
-                <button id="modal-practice-btn" onclick="openPracticeFromModal()" class="flex-1 py-3 bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-bold rounded-xl text-sm transition flex items-center justify-center space-x-2 shadow-md">
-                    <i class="fa-solid fa-pen-nib"></i>
-                    <span>この漢字をキャンバスで練習</span>
-                </button>
-            </div>
-
+  <!-- カスタム確認モーダル（全消去・ノート削除用：alert/confirmの代替） -->
+  <div id="confirm-modal" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-stone-100 transform transition-all">
+      <div class="flex items-center gap-3 text-amber-600 mb-3">
+        <div class="p-2 bg-amber-50 rounded-full">
+          <i data-lucide="alert-triangle" class="w-6 h-6"></i>
         </div>
+        <h3 id="modal-title" class="font-bold text-lg text-stone-800">確認</h3>
+      </div>
+      <p id="modal-message" class="text-sm text-stone-600 mb-6 leading-relaxed">
+        この操作を実行してもよろしいですか？
+      </p>
+      <div class="flex justify-end gap-2.5">
+        <button id="modal-cancel-btn" class="px-4 py-2 rounded-xl text-sm font-medium text-stone-600 hover:bg-stone-100 transition-colors">
+          キャンセル
+        </button>
+        <button id="modal-confirm-btn" class="px-4 py-2 rounded-xl text-sm font-medium bg-red-600 hover:bg-red-700 text-white shadow-sm transition-colors">
+          実行する
+        </button>
+      </div>
     </div>
+  </div>
 
+  <!-- トースト通知 -->
+  <div id="toast" class="fixed bottom-5 right-5 bg-stone-800 text-white text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 z-50 pointer-events-none">
+    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toast-message">保存しました</span>
+  </div>
 
-    <!-- ========================================== -->
-    <!-- JAVASCRIPT LOGIC & BUILT-IN KANJI DATA -->
-    <!-- ========================================== -->
-    <script>
-        /* ----------------------------------------------------
-           1. BUILT-IN KANJI DATA (30+ Complete Rich Entries)
-        ---------------------------------------------------- */
-        const KANJI_DATABASE = [
-            {
-                id: "日",
-                kanji: "日",
-                onyomi: ["ニチ", "ジツ"],
-                kunyomi: ["ひ", "-び", "か"],
-                romaji: "nichi, jitsu / hi, bi, ka",
-                meaning: "Sun, day, Japan",
-                meaningJp: "太陽、日、日本",
-                jlpt: "N5",
-                grade: "小1",
-                strokes: 4,
-                radical: "日 (ひ・にちへん)",
-                examples: [
-                    { word: "日本", reading: "にほん", meaning: "Japan" },
-                    { word: "日曜日", reading: "にちようび", meaning: "Sunday" },
-                    { word: "毎日", reading: "まいにち", meaning: "Everyday" },
-                    { word: "三日", reading: "みっか", meaning: "3rd day of month" }
-                ]
-            },
-            {
-                id: "本",
-                kanji: "本",
-                onyomi: ["ホン"],
-                kunyomi: ["もと"],
-                romaji: "hon / moto",
-                meaning: "Book, origin, main",
-                meaningJp: "本、書籍、根元",
-                jlpt: "N5",
-                grade: "小1",
-                strokes: 5,
-                radical: "木 (き)",
-                examples: [
-                    { word: "本", reading: "ほん", meaning: "Book" },
-                    { word: "山本", reading: "やまもと", meaning: "Yamamoto (surname)" },
-                    { word: "本文", reading: "ほんぶん", meaning: "Body text" }
-                ]
-            },
-            {
-                id: "月",
-                kanji: "月",
-                onyomi: ["ゲツ", "ガツ"],
-                kunyomi: ["つき"],
-                romaji: "getsu, gatsu / tsuki",
-                meaning: "Moon, month",
-                meaningJp: "月、月曜日、1か月",
-                jlpt: "N5",
-                grade: "小1",
-                strokes: 4,
-                radical: "月 (つき)",
-                examples: [
-                    { word: "月曜日", reading: "げつようび", meaning: "Monday" },
-                    { word: "一月", reading: "いちがつ", meaning: "January" },
-                    { word: "今月", reading: "こんげつ", meaning: "This month" },
-                    { word: "満月", reading: "まんげつ", meaning: "Full moon" }
-                ]
-            },
-            {
-                id: "火",
-                kanji: "火",
-                onyomi: ["カ"],
-                kunyomi: ["ひ", "ほ-"],
-                romaji: "ka / hi, ho",
-                meaning: "Fire",
-                meaningJp: "火、炎",
-                jlpt: "N5",
-                grade: "小1",
-                strokes: 4,
-                radical: "火 (ひ・ひへん)",
-                examples: [
-                    { word: "火曜日", reading: "かようび", meaning: "Tuesday" },
-                    { word: "火事", reading: "かじ", meaning: "Fire accident" },
-                    { word: "花火", reading: "はなび", meaning: "Fireworks" }
-                ]
-            },
-            {
-                id: "水",
-                kanji: "水",
-                onyomi: ["スイ"],
-                kunyomi: ["みず"],
-                romaji: "sui / mizu",
-                meaning: "Water",
-                meaningJp: "水、みず",
-                jlpt: "N5",
-                grade: "小1",
-                strokes: 4,
-                radical: "水 (みず)",
-                examples: [
-                    { word: "水曜日", reading: "すいようび", meaning: "Wednesday" },
-                    { word: "海水", reading: "かいすい", meaning: "Seawater" },
-                    { word: "水泳", reading: "すいえい", meaning: "Swimming" }
-                ]
-            },
-            {
-                id: "木",
-                kanji: "木",
-                onyomi: ["モク", "ボク"],
-                kunyomi: ["き", "こ-"],
-                romaji: "moku, boku / ki",
-                meaning: "Tree, wood",
-                meaningJp: "木、樹木",
-                jlpt: "N5",
-                grade: "小1",
-                strokes: 4,
-                radical: "木 (き)",
-                examples: [
-                    { word: "木曜日", reading: "もくようび", meaning: "Thursday" },
-                    { word: "大木", reading: "たいぼく", meaning: "Large tree" }
-                ]
-            },
-            {
-                id: "金",
-                kanji: "金",
-                onyomi: ["キン", "コン"],
-                kunyomi: ["かね", "かな-"],
-                romaji: "kin, kon / kane",
-                meaning: "Gold, money, metal",
-                meaningJp: "金、お金、金属",
-                jlpt: "N5",
-                grade: "小1",
-                strokes: 8,
-                radical: "金 (かね)",
-                examples: [
-                    { word: "金曜日", reading: "きんようび", meaning: "Friday" },
-                    { word: "お金", reading: "おかね", meaning: "Money" },
-                    { word: "金メダル", reading: "きんメダル", meaning: "Gold medal" }
-                ]
-            },
-            {
-                id: "土",
-                kanji: "土",
-                onyomi: ["ド", "ト"],
-                kunyomi: ["つち"],
-                romaji: "do, to / tsuchi",
-                meaning: "Earth, soil, ground",
-                meaningJp: "土、土地、地面",
-                jlpt: "N5",
-                grade: "小1",
-                strokes: 3,
-                radical: "土 (つち)",
-                examples: [
-                    { word: "土曜日", reading: "どようび", meaning: "Saturday" },
-                    { word: "土産", reading: "みやげ", meaning: "Souvenir" },
-                    { word: "土地", reading: "とち", meaning: "Land" }
-                ]
-            },
-            {
-                id: "山",
-                kanji: "山",
-                onyomi: ["サン", "セン"],
-                kunyomi: ["やま"],
-                romaji: "san, sen / yama",
-                meaning: "Mountain",
-                meaningJp: "山",
-                jlpt: "N5",
-                grade: "小1",
-                strokes: 3,
-                radical: "山 (やま)",
-                examples: [
-                    { word: "富士山", reading: "ふじさん", meaning: "Mt. Fuji" },
-                    { word: "火山", reading: "かざん", meaning: "Volcano" },
-                    { word: "山登り", reading: "やまのぼり", meaning: "Mountain climbing" }
-                ]
-            },
-            {
-                id: "川",
-                kanji: "川",
-                onyomi: ["セン"],
-                kunyomi: ["かわ"],
-                romaji: "sen / kawa",
-                meaning: "River",
-                meaningJp: "川、河川",
-                jlpt: "N5",
-                grade: "小1",
-                strokes: 3,
-                radical: "川 (かわ)",
-                examples: [
-                    { word: "小川", reading: "おがわ", meaning: "Stream" },
-                    { word: "ナイル川", reading: "ナイルがわ", meaning: "Nile River" }
-                ]
-            },
-            {
-                id: "学",
-                kanji: "学",
-                onyomi: ["ガク"],
-                kunyomi: ["まな.ぶ"],
-                romaji: "gaku / manabu",
-                meaning: "Study, learning, science",
-                meaningJp: "学ぶ、学問",
-                jlpt: "N5",
-                grade: "小1",
-                strokes: 8,
-                radical: "子 (こ)",
-                examples: [
-                    { word: "学生", reading: "がくせい", meaning: "Student" },
-                    { word: "学校", reading: "がっこう", meaning: "School" },
-                    { word: "大学", reading: "だいがく", meaning: "University" }
-                ]
-            },
-            {
-                id: "生",
-                kanji: "生",
-                onyomi: ["セイ", "ショウ"],
-                kunyomi: ["い.きる", "う.まれ", "なま"],
-                romaji: "sei, shou / ikiru, umare, nama",
-                meaning: "Life, birth, genuine",
-                meaningJp: "生きる、生まれる、生",
-                jlpt: "N5",
-                grade: "小1",
-                strokes: 5,
-                radical: "生 (いきる)",
-                examples: [
-                    { word: "先生", reading: "せんせい", meaning: "Teacher" },
-                    { word: "生活", reading: "せいかつ", meaning: "Life / Living" },
-                    { word: "誕生日", reading: "たんじょうび", meaning: "Birthday" }
-                ]
-            },
-            {
-                id: "心",
-                kanji: "心",
-                onyomi: ["シン"],
-                kunyomi: ["こころ"],
-                romaji: "shin / kokoro",
-                meaning: "Heart, mind, spirit",
-                meaningJp: "心、精神、気持ち",
-                jlpt: "N4",
-                grade: "小2",
-                strokes: 4,
-                radical: "心 (こころ)",
-                examples: [
-                    { word: "安心", reading: "あんしん", meaning: "Relief / Peace of mind" },
-                    { word: "中心", reading: "ちゅうしん", meaning: "Center" },
-                    { word: "心理学", reading: "しんりがく", meaning: "Psychology" }
-                ]
-            },
-            {
-                id: "愛",
-                kanji: "愛",
-                onyomi: ["アイ"],
-                kunyomi: ["いとし.い"],
-                romaji: "ai / itoshii",
-                meaning: "Love, affection",
-                meaningJp: "愛、いつくしみ",
-                jlpt: "N3",
-                grade: "小4",
-                strokes: 13,
-                radical: "心 (こころ)",
-                examples: [
-                    { word: "愛情", reading: "あいじょう", meaning: "Love / Affection" },
-                    { word: "愛犬", reading: "あいけん", meaning: "Pet dog" },
-                    { word: "恋愛", reading: "れんあい", meaning: "Romance" }
-                ]
-            },
-            {
-                id: "道",
-                kanji: "道",
-                onyomi: ["ドウ", "トウ"],
-                kunyomi: ["みち"],
-                romaji: "dou, tou / michi",
-                meaning: "Road, path, way",
-                meaningJp: "道、道路、道徳",
-                jlpt: "N4",
-                grade: "小2",
-                strokes: 12,
-                radical: "辵 (しんにょう)",
-                examples: [
-                    { word: "水道", reading: "すいどう", meaning: "Water supply" },
-                    { word: "柔道", reading: "じゅうどう", meaning: "Judo" },
-                    { word: "北海道", reading: "ほっかいどう", meaning: "Hokkaido" }
-                ]
-            },
-            {
-                id: "旅",
-                kanji: "旅",
-                onyomi: ["リョ"],
-                kunyomi: ["たび"],
-                romaji: "ryo / tabi",
-                meaning: "Trip, travel",
-                meaningJp: "旅、旅行",
-                jlpt: "N4",
-                grade: "小3",
-                strokes: 10,
-                radical: "方 (ほうへん)",
-                examples: [
-                    { word: "旅行", reading: "りょこう", meaning: "Travel" },
-                    { word: "旅人", reading: "たびびと", meaning: "Traveler" },
-                    { word: "一人旅", reading: "ひとりたび", meaning: "Solo travel" }
-                ]
-            },
-            {
-                id: "夢",
-                kanji: "夢",
-                onyomi: ["ム"],
-                kunyomi: ["ゆめ"],
-                romaji: "mu / yume",
-                meaning: "Dream, vision",
-                meaningJp: "夢、はかない思い",
-                jlpt: "N3",
-                grade: "小5",
-                strokes: 13,
-                radical: "夕 (ゆうべ)",
-                examples: [
-                    { word: "夢中", reading: "むちゅう", meaning: "Obsessed / Absorbed" },
-                    { word: "悪夢", reading: "あくむ", meaning: "Nightmare" }
-                ]
-            },
-            {
-                id: "桜",
-                kanji: "桜",
-                onyomi: ["オウ"],
-                kunyomi: ["さくら"],
-                romaji: "ou / sakura",
-                meaning: "Cherry blossom",
-                meaningJp: "桜の花",
-                jlpt: "N2",
-                grade: "小5",
-                strokes: 10,
-                radical: "木 (きへん)",
-                examples: [
-                    { word: "夜桜", reading: "よざくら", meaning: "Night cherry blossoms" },
-                    { word: "桜前線", reading: "さくらぜんせん", meaning: "Cherry blossom front" }
-                ]
-            },
-            {
-                id: "光",
-                kanji: "光",
-                onyomi: ["コウ"],
-                kunyomi: ["ひかり", "ひかる"],
-                romaji: "kou / hikari, hikaru",
-                meaning: "Light, ray",
-                meaningJp: "光、かがやき",
-                jlpt: "N3",
-                grade: "小2",
-                strokes: 6,
-                radical: "儿 (ひとあし)",
-                examples: [
-                    { word: "日光", reading: "にっこう", meaning: "Sunlight" },
-                    { word: "観光", reading: "かんこう", meaning: "Sightseeing" },
-                    { word: "月光", reading: "げっこう", meaning: "Moonlight" }
-                ]
-            },
-            {
-                id: "空",
-                kanji: "空",
-                onyomi: ["クウ"],
-                kunyomi: ["そら", "あ.く", "から"],
-                romaji: "kuu / sora, aku, kara",
-                meaning: "Sky, empty, void",
-                meaningJp: "空、大気、から",
-                jlpt: "N5",
-                grade: "小1",
-                strokes: 8,
-                radical: "穴 (あな)",
-                examples: [
-                    { word: "青空", reading: "あおぞら", meaning: "Blue sky" },
-                    { word: "空港", reading: "くうこう", meaning: "Airport" },
-                    { word: "空気", reading: "くうき", meaning: "Air" }
-                ]
-            },
-            {
-                id: "風",
-                kanji: "風",
-                onyomi: ["フウ", "フ"],
-                kunyomi: ["かぜ"],
-                romaji: "fuu, fu / kaze",
-                meaning: "Wind, manner, style",
-                meaningJp: "風、空気の動き、風潮",
-                jlpt: "N4",
-                grade: "小2",
-                strokes: 9,
-                radical: "風 (かぜ)",
-                examples: [
-                    { word: "台風", reading: "たいふう", meaning: "Typhoon" },
-                    { word: "和風", reading: "わふう", meaning: "Japanese style" },
-                    { word: "風邪", reading: "かぜ", meaning: "Cold (illness)" }
-                ]
-            },
-            {
-                id: "海",
-                kanji: "海",
-                onyomi: ["カイ"],
-                kunyomi: ["うみ"],
-                romaji: "kai / umi",
-                meaning: "Sea, ocean",
-                meaningJp: "海、うみ",
-                jlpt: "N4",
-                grade: "小2",
-                strokes: 9,
-                radical: "水 (さんずい)",
-                examples: [
-                    { word: "海外", reading: "かいがい", meaning: "Overseas" },
-                    { word: "海水浴", reading: "かいすいよく", meaning: "Sea bathing" },
-                    { word: "日本海", reading: "にほんかい", meaning: "Sea of Japan" }
-                ]
-            },
-            {
-                id: "竜",
-                kanji: "竜",
-                onyomi: ["リュウ"],
-                kunyomi: ["たつ"],
-                romaji: "ryuu / tatsu",
-                meaning: "Dragon",
-                meaningJp: "竜、ドラゴン",
-                jlpt: "N1",
-                grade: "常用",
-                strokes: 10,
-                radical: "竜 (りゅう)",
-                examples: [
-                    { word: "恐竜", reading: "きょうりゅう", meaning: "Dinosaur" },
-                    { word: "竜巻", reading: "たつまき", meaning: "Tornado" }
-                ]
-            },
-            {
-                id: "響",
-                kanji: "響",
-                onyomi: ["キョウ"],
-                kunyomi: ["ひび.く"],
-                romaji: "kyou / hibiku",
-                meaning: "Echo, resound, reverberate",
-                meaningJp: "響く、反響",
-                jlpt: "N1",
-                grade: "常用",
-                strokes: 20,
-                radical: "音 (おと)",
-                examples: [
-                    { word: "影響", reading: "えいきょう", meaning: "Influence / Effect" },
-                    { word: "反響", reading: "はんきょう", meaning: "Reverberation" }
-                ]
-            },
-            {
-                id: "花",
-                kanji: "花",
-                onyomi: ["カ"],
-                kunyomi: ["はな"],
-                romaji: "ka / hana",
-                meaning: "Flower, blossom",
-                meaningJp: "花、はな",
-                jlpt: "N5",
-                grade: "小1",
-                strokes: 7,
-                radical: "艸 (くさかんむり)",
-                examples: [
-                    { word: "花壇", reading: "かだん", meaning: "Flower bed" },
-                    { word: "花火", reading: "はなび", meaning: "Fireworks" }
-                ]
-            },
-            {
-                id: "星",
-                kanji: "星",
-                onyomi: ["セイ"],
-                kunyomi: ["ほし"],
-                romaji: "sei / hoshi",
-                meaning: "Star, planet",
-                meaningJp: "星、天体",
-                jlpt: "N4",
-                grade: "小2",
-                strokes: 9,
-                radical: "日 (ひ)",
-                examples: [
-                    { word: "火星", reading: "かせい", meaning: "Mars" },
-                    { word: "星空", reading: "ほしぞら", meaning: "Starry sky" }
-                ]
-            },
-            {
-                id: "雪",
-                kanji: "雪",
-                onyomi: ["セツ"],
-                kunyomi: ["ゆき"],
-                romaji: "setsu / yuki",
-                meaning: "Snow",
-                meaningJp: "雪、ゆき",
-                jlpt: "N4",
-                grade: "小2",
-                strokes: 11,
-                radical: "雨 (あめかんむり)",
-                examples: [
-                    { word: "大雪", reading: "おおゆき", meaning: "Heavy snow" },
-                    { word: "新雪", reading: "しんせつ", meaning: "Fresh snow" }
-                ]
-            },
-            {
-                id: "車",
-                kanji: "車",
-                onyomi: ["シャ"],
-                kunyomi: ["くるま"],
-                romaji: "sha / kuruma",
-                meaning: "Car, vehicle, wheel",
-                meaningJp: "車、自動車",
-                jlpt: "N5",
-                grade: "小1",
-                strokes: 7,
-                radical: "車 (くるま)",
-                examples: [
-                    { word: "電車", reading: "でんしゃ", meaning: "Train" },
-                    { word: "自動車", reading: "じどうしゃ", meaning: "Automobile" }
-                ]
-            },
-            {
-                id: "友",
-                kanji: "友",
-                onyomi: ["ユウ"],
-                kunyomi: ["とも"],
-                romaji: "yuu / tomo",
-                meaning: "Friend",
-                meaningJp: "友達、親しい人",
-                jlpt: "N5",
-                grade: "小2",
-                strokes: 4,
-                radical: "又 (また)",
-                examples: [
-                    { word: "友達", reading: "ともだち", meaning: "Friend" },
-                    { word: "友情", reading: "ゆうじょう", meaning: "Friendship" }
-                ]
-            },
-            {
-                id: "和",
-                kanji: "和",
-                onyomi: ["ワ"],
-                kunyomi: ["やわ.らぐ", "なご.む"],
-                romaji: "wa / yawaragu, nagomu",
-                meaning: "Harmony, peace, Japanese style",
-                meaningJp: "和らぐ、平和、日本風",
-                jlpt: "N3",
-                grade: "小3",
-                strokes: 8,
-                radical: "口 (くち)",
-                examples: [
-                    { word: "平和", reading: "へいわ", meaning: "Peace" },
-                    { word: "和食", reading: "わしょく", meaning: "Japanese food" },
-                    { word: "和菓子", reading: "わがし", meaning: "Japanese sweets" }
-                ]
-            }
-        ];
+  <script>
+    /**
+     * Atelier Note - 多機能デジタルノートWebアプリケーション
+     * アーキテクチャ概要:
+     * 1. デュアルキャンバス構成:
+     *    - bgCanvas: 選択された紙の種類（無地・罫線・方眼・ドット・クラフト・ダーク）を描画
+     *    - drawingCanvas: ユーザーのストロークを描画（消しゴムや再描画に対応）
+     * 2. ベクターデータ形式でのストローク保持:
+     *    - 各ストロークを座標・筆圧・速度・ツール・色・太さの配列として保持することで、
+     *      画面リサイズ時の美しい再描画、Undo/Redo、LocalStorageへの軽量保存を実現。
+     * 3. 鉛筆の質感生成用オフスクリーンノイズパターン:
+     *    - 鉛筆ツール選択時にザラつきのある質感をリアルタイムに再現。
+     */
 
+    // --- アイコン初期化 ---
+    lucide.createIcons();
 
-        /* ----------------------------------------------------
-           2. STATE MANAGEMENT & STORAGE
-        ---------------------------------------------------- */
-        let state = {
-            currentTab: 'dictionary',
-            favorites: JSON.parse(localStorage.getItem('kanji_master_favs') || '[]'),
-            currentSort: 'default',
-            practiceKanjiId: '日',
-            flashcards: {
-                deck: [],
-                currentIndex: 0,
-                isFlipped: false,
-                masteredIds: new Set()
-            },
-            quiz: {
-                active: false,
-                type: 'meaning',
-                totalQuestions: 10,
-                currentIndex: 0,
-                questions: [],
-                score: 0,
-                streak: 0,
-                maxStreak: 0
-            },
-            activeModalKanjiId: null
-        };
+    // --- DOM要素の取得 ---
+    const bgCanvas = document.getElementById('bg-canvas');
+    const bgCtx = bgCanvas.getContext('2d');
+    const drawingCanvas = document.getElementById('drawing-canvas');
+    const ctx = drawingCanvas.getContext('2d');
+    const paperSheet = document.getElementById('paper-sheet');
 
+    const noteTitleInput = document.getElementById('note-title-input');
+    const paperTypeSelect = document.getElementById('paper-type-select');
+    const penSizeSlider = document.getElementById('pen-size-slider');
+    const penSizeLabel = document.getElementById('pen-size-label');
+    const sizePreviewDot = document.getElementById('size-preview-dot');
+    const customColorPicker = document.getElementById('custom-color-picker');
 
-        /* ----------------------------------------------------
-           3. AUDIO & SPEECH SYNTHESIS UTILITIES
-        ---------------------------------------------------- */
-        const playSound = (type) => {
-            try {
-                const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                if (!AudioCtx) return;
-                const ctx = new AudioCtx();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                const now = ctx.currentTime;
+    const undoBtn = document.getElementById('undo-btn');
+    const redoBtn = document.getElementById('redo-btn');
+    const clearBtn = document.getElementById('clear-btn');
+    const manualSaveBtn = document.getElementById('manual-save-btn');
+    const exportPngBtn = document.getElementById('export-png-btn');
+    const saveStatus = document.getElementById('save-status');
 
-                if (type === 'correct') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(523.25, now); // C5
-                    osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.12); // E5
-                    gain.gain.setValueAtTime(0.2, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-                    osc.start(now);
-                    osc.stop(now + 0.25);
-                } else if (type === 'wrong') {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(200, now);
-                    osc.frequency.linearRampToValueAtTime(120, now + 0.2);
-                    gain.gain.setValueAtTime(0.2, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-                    osc.start(now);
-                    osc.stop(now + 0.2);
-                } else if (type === 'flip') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(350, now);
-                    osc.frequency.exponentialRampToValueAtTime(700, now + 0.08);
-                    gain.gain.setValueAtTime(0.15, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
-                    osc.start(now);
-                    osc.stop(now + 0.08);
-                } else if (type === 'clear') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(600, now);
-                    osc.frequency.exponentialRampToValueAtTime(200, now + 0.15);
-                    gain.gain.setValueAtTime(0.15, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-                    osc.start(now);
-                    osc.stop(now + 0.15);
-                }
-            } catch (e) {
-                // AudioContext silent fallback
-            }
-        };
+    // サイドバー関連
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
+    const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+    const newNoteBtn = document.getElementById('new-note-btn');
+    const notesListEl = document.getElementById('notes-list');
 
-        const speakText = (text) => {
-            if (!('speechSynthesis' in window)) return;
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'ja-JP';
-            utterance.rate = 0.85;
-            window.speechSynthesis.speak(utterance);
-        };
+    // モーダル・トースト関連
+    const confirmModal = document.getElementById('confirm-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalMessage = document.getElementById('modal-message');
+    const modalCancelBtn = document.getElementById('modal-cancel-btn');
+    const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+    const toastEl = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
 
+    // --- アプリケーション状態管理 ---
+    const STORAGE_KEY = 'atelier_note_data_v1';
 
-        /* ----------------------------------------------------
-           4. NAVIGATION & THEME SWITCHING
-        ---------------------------------------------------- */
-        function switchTab(tabId) {
-            state.currentTab = tabId;
+    let appState = {
+      notes: [],          // 全ノートの配列
+      currentNoteId: null // 現在開いているノートのID
+    };
 
-            // Hide all views
-            ['dictionary', 'practice', 'flashcards', 'quiz', 'favorites'].forEach(id => {
-                const el = document.getElementById(`view-${id}`);
-                if (el) el.classList.add('hidden');
+    // 現在の描画ツール設定
+    let toolState = {
+      tool: 'ballpoint',  // ballpoint, fountain, pencil, highlighter, brush, eraser
+      color: '#1e293b',
+      size: 3,
+      isDrawing: false,
+      currentStroke: null,
+      lastPoint: null,
+      lastTime: 0,
+      lastWidth: 3
+    };
 
-                // Desktop Nav Active State
-                const navBtn = document.getElementById(`nav-${id}`);
-                if (navBtn) {
-                    if (id === tabId) {
-                        navBtn.className = "nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center space-x-2 text-rose-600 bg-rose-50 dark:bg-rose-950/40";
-                    } else {
-                        navBtn.className = "nav-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center space-x-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800";
-                    }
-                }
+    // Undo / Redo スタック（現在のノート用）
+    let undoStack = [];
+    let redoStack = [];
 
-                // Mobile Nav Active State
-                const mBtn = document.getElementById(`mobile-nav-${id}`);
-                if (mBtn) {
-                    if (id === tabId) {
-                        mBtn.className = "flex flex-col items-center py-1 px-3 text-rose-600";
-                    } else {
-                        mBtn.className = "flex flex-col items-center py-1 px-3 text-slate-400";
-                    }
-                }
-            });
+    // 論理キャンバス基準サイズ（異なる画面サイズ間でも比率を保つため）
+    let canvasWidth = 1000;
+    let canvasHeight = 700;
+    let dpr = window.devicePixelRatio || 1;
 
-            // Show selected view
-            const activeView = document.getElementById(`view-${tabId}`);
-            if (activeView) activeView.classList.remove('hidden');
+    // 鉛筆用ノイズパターンキャッシュ
+    let pencilPatterns = {};
 
-            // Trigger specific tab initializers
-            if (tabId === 'practice') {
-                initCanvasIfNeeded();
-                updatePracticeCard();
-            } else if (tabId === 'flashcards') {
-                initFlashcards();
-            } else if (tabId === 'favorites') {
-                renderFavorites();
-            }
+    // --- ユーティリティ関数 ---
+    function generateId() {
+      return 'note_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+    }
 
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+    function formatDate(timestamp) {
+      const d = new Date(timestamp);
+      const month = d.getMonth() + 1;
+      const day = d.getDate();
+      const hours = String(d.getHours()).padStart(2, '0');
+      const mins = String(d.getMinutes()).padStart(2, '0');
+      return `${month}/${day} ${hours}:${mins}`;
+    }
+
+    let toastTimeout;
+    function showToast(msg) {
+      toastMessage.textContent = msg;
+      toastEl.classList.remove('translate-y-20', 'opacity-0');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toastEl.classList.add('translate-y-20', 'opacity-0');
+      }, 2400);
+    }
+
+    // カスタム確認ダイアログ
+    function openConfirmModal(title, message, onConfirm) {
+      modalTitle.textContent = title;
+      modalMessage.textContent = message;
+      confirmModal.classList.remove('hidden');
+      confirmModal.classList.add('flex');
+
+      const cleanup = () => {
+        confirmModal.classList.add('hidden');
+        confirmModal.classList.remove('flex');
+        modalConfirmBtn.onclick = null;
+        modalCancelBtn.onclick = null;
+      };
+
+      modalCancelBtn.onclick = cleanup;
+      modalConfirmBtn.onclick = () => {
+        cleanup();
+        onConfirm();
+      };
+    }
+
+    // --- 紙の背景描画ロジック ---
+    const PAPER_CONFIGS = {
+      plain: {
+        name: '無地',
+        bg: '#ffffff',
+        line: null
+      },
+      ruled: {
+        name: '罫線',
+        bg: '#fffdf9',
+        line: '#cbd5e1',
+        marginLine: '#fca5a5'
+      },
+      grid: {
+        name: '方眼',
+        bg: '#ffffff',
+        line: '#e2e8f0',
+        subLine: '#f1f5f9'
+      },
+      dot: {
+        name: 'ドット方眼',
+        bg: '#ffffff',
+        dot: '#94a3b8'
+      },
+      kraft: {
+        name: 'クラフト紙',
+        bg: '#d6b892',
+        fiber: 'rgba(120, 80, 40, 0.06)'
+      },
+      dark: {
+        name: 'ダーク（黒板風）',
+        bg: '#1e242b',
+        line: 'rgba(255, 255, 255, 0.08)'
+      }
+    };
+
+    function renderPaperBackground(ctxTarget, width, height, paperType) {
+      const config = PAPER_CONFIGS[paperType] || PAPER_CONFIGS.plain;
+
+      // ベース背景塗りつぶし
+      ctxTarget.save();
+      ctxTarget.fillStyle = config.bg;
+      ctxTarget.fillRect(0, 0, width, height);
+
+      if (paperType === 'ruled') {
+        // 横罫線 (32px間隔) + 左マージン赤線
+        const step = 32;
+        ctxTarget.strokeStyle = config.line;
+        ctxTarget.lineWidth = 1;
+        ctxTarget.beginPath();
+        for (let y = step * 2; y < height; y += step) {
+          ctxTarget.moveTo(0, y);
+          ctxTarget.lineTo(width, y);
+        }
+        ctxTarget.stroke();
+
+        // 左端のマージンライン
+        ctxTarget.strokeStyle = config.marginLine;
+        ctxTarget.lineWidth = 1.5;
+        ctxTarget.beginPath();
+        ctxTarget.moveTo(64, 0);
+        ctxTarget.lineTo(64, height);
+        ctxTarget.stroke();
+
+      } else if (paperType === 'grid') {
+        // 5mm方眼風 (24px間隔)
+        const step = 24;
+        ctxTarget.strokeStyle = config.line;
+        ctxTarget.lineWidth = 1;
+        ctxTarget.beginPath();
+        for (let x = step; x < width; x += step) {
+          ctxTarget.moveTo(x, 0);
+          ctxTarget.lineTo(x, height);
+        }
+        for (let y = step; y < height; y += step) {
+          ctxTarget.moveTo(0, y);
+          ctxTarget.lineTo(width, y);
+        }
+        ctxTarget.stroke();
+
+      } else if (paperType === 'dot') {
+        // ドット方眼 (24px間隔)
+        const step = 24;
+        ctxTarget.fillStyle = config.dot;
+        for (let x = step; x < width; x += step) {
+          for (let y = step; y < height; y += step) {
+            ctxTarget.beginPath();
+            ctxTarget.arc(x, y, 1.2, 0, Math.PI * 2);
+            ctxTarget.fill();
+          }
         }
 
-        function toggleTheme() {
-            const html = document.documentElement;
-            if (html.classList.contains('dark')) {
-                html.classList.remove('dark');
-                html.classList.add('light');
-                localStorage.setItem('kanji_theme', 'light');
-            } else {
-                html.classList.remove('light');
-                html.classList.add('dark');
-                localStorage.setItem('kanji_theme', 'dark');
-            }
-            // Redraw practice canvas grid if active
-            if (state.currentTab === 'practice') redrawCanvas();
+      } else if (paperType === 'kraft') {
+        // クラフト紙の繊維風テクスチャ（決定論的擬似乱数で毎回同じ模様にする）
+        ctxTarget.fillStyle = config.fiber;
+        for (let i = 0; i < 2500; i++) {
+          const x = (i * 73) % width;
+          const y = (i * 137) % height;
+          const w = (i % 4) + 1;
+          ctxTarget.fillRect(x, y, w, 1);
         }
+        // 周囲にわずかなビネット効果
+        const grad = ctxTarget.createRadialGradient(
+          width / 2, height / 2, width * 0.3,
+          width / 2, height / 2, width * 0.75
+        );
+        grad.addColorStop(0, 'rgba(0,0,0,0)');
+        grad.addColorStop(1, 'rgba(92, 60, 28, 0.12)');
+        ctxTarget.fillStyle = grad;
+        ctxTarget.fillRect(0, 0, width, height);
 
-        function updateFavBadgeCount() {
-            const badge = document.getElementById('fav-count-badge');
-            if (badge) badge.textContent = state.favorites.length;
+      } else if (paperType === 'dark') {
+        // 黒板風の微細なチョーク粉テクスチャ＆控えめな方眼ガイド
+        ctxTarget.strokeStyle = config.line;
+        ctxTarget.lineWidth = 1;
+        const step = 36;
+        ctxTarget.beginPath();
+        for (let x = step; x < width; x += step) {
+          ctxTarget.moveTo(x, 0);
+          ctxTarget.lineTo(x, height);
         }
-
-        function toggleFavorite(kanjiId, event) {
-            if (event) event.stopPropagation();
-            const index = state.favorites.indexOf(kanjiId);
-            if (index > -1) {
-                state.favorites.splice(index, 1);
-            } else {
-                state.favorites.push(kanjiId);
-            }
-            localStorage.setItem('kanji_master_favs', JSON.stringify(state.favorites));
-            updateFavBadgeCount();
-            renderDictionary();
-            if (state.currentTab === 'favorites') renderFavorites();
-            
-            // Sync modal favorite button if open
-            if (state.activeModalKanjiId === kanjiId) {
-                updateModalFavBtnState(kanjiId);
-            }
+        for (let y = step; y < height; y += step) {
+          ctxTarget.moveTo(0, y);
+          ctxTarget.lineTo(width, y);
         }
+        ctxTarget.stroke();
+      }
 
+      ctxTarget.restore();
+    }
 
-        /* ----------------------------------------------------
-           5. KANJI DICTIONARY / SEARCH LOGIC
-        ---------------------------------------------------- */
-        function getFilteredKanji() {
-            const query = (document.getElementById('search-input')?.value || '').trim().toLowerCase();
-            const jlptFilter = document.getElementById('filter-jlpt')?.value || 'ALL';
-            const gradeFilter = document.getElementById('filter-grade')?.value || 'ALL';
+    // --- 鉛筆用のザラつきパターン生成 ---
+    function getPencilPattern(hexColor) {
+      if (pencilPatterns[hexColor]) return pencilPatterns[hexColor];
 
-            return KANJI_DATABASE.filter(item => {
-                // JLPT Filter
-                if (jlptFilter !== 'ALL' && item.jlpt !== jlptFilter) return false;
-                // Grade Filter
-                if (gradeFilter !== 'ALL' && item.grade !== gradeFilter) return false;
+      const pCanvas = document.createElement('canvas');
+      pCanvas.width = 32;
+      pCanvas.height = 32;
+      const pCtx = pCanvas.getContext('2d');
 
-                // Search query match
-                if (!query) return true;
-                const matchKanji = item.kanji.includes(query);
-                const matchMeaning = item.meaning.toLowerCase().includes(query) || item.meaningJp.includes(query);
-                const matchOnyomi = item.onyomi.some(o => o.includes(query));
-                const matchKunyomi = item.kunyomi.some(k => k.includes(query));
-                const matchRomaji = item.romaji.toLowerCase().includes(query);
-
-                return matchKanji || matchMeaning || matchOnyomi || matchKunyomi || matchRomaji;
-            }).sort((a, b) => {
-                if (state.currentSort === 'strokes') return a.strokes - b.strokes;
-                if (state.currentSort === 'jlpt') return a.jlpt.localeCompare(b.jlpt);
-                return 0; // Default order
-            });
+      pCtx.fillStyle = hexColor;
+      // ランダムな粒子を配置して黒鉛のザラつきを表現
+      for (let x = 0; x < 32; x++) {
+        for (let y = 0; y < 32; y++) {
+          if (Math.random() > 0.32) {
+            pCtx.globalAlpha = 0.45 + Math.random() * 0.55;
+            pCtx.fillRect(x, y, 1, 1);
+          }
         }
+      }
+      const pattern = ctx.createPattern(pCanvas, 'repeat');
+      pencilPatterns[hexColor] = pattern;
+      return pattern;
+    }
 
-        function setSort(type) {
-            state.currentSort = type;
-            ['default', 'strokes', 'jlpt'].forEach(t => {
-                const btn = document.getElementById(`sort-${t}`);
-                if (btn) {
-                    if (t === type) {
-                        btn.className = "hover:text-rose-600 font-bold text-rose-600 underline";
-                    } else {
-                        btn.className = "hover:text-rose-600 text-slate-500 dark:text-slate-400";
-                    }
-                }
-            });
-            renderDictionary();
+    // --- ストローク描画エンジン ---
+    function drawStroke(targetCtx, stroke) {
+      if (!stroke || !stroke.points || stroke.points.length === 0) return;
+
+      const pts = stroke.points;
+      targetCtx.save();
+
+      // ツールごとの合成モード・スタイル設定
+      if (stroke.tool === 'eraser') {
+        targetCtx.globalCompositeOperation = 'destination-out';
+        targetCtx.strokeStyle = 'rgba(0,0,0,1)';
+        targetCtx.fillStyle = 'rgba(0,0,0,1)';
+        targetCtx.lineCap = 'round';
+        targetCtx.lineJoin = 'round';
+      } else if (stroke.tool === 'highlighter') {
+        targetCtx.globalCompositeOperation = 'source-over';
+        targetCtx.globalAlpha = 0.32;
+        targetCtx.strokeStyle = stroke.color;
+        targetCtx.fillStyle = stroke.color;
+        targetCtx.lineCap = 'square';
+        targetCtx.lineJoin = 'round';
+      } else if (stroke.tool === 'pencil') {
+        targetCtx.globalCompositeOperation = 'source-over';
+        targetCtx.globalAlpha = 0.85;
+        const pat = getPencilPattern(stroke.color);
+        targetCtx.strokeStyle = pat || stroke.color;
+        targetCtx.fillStyle = pat || stroke.color;
+        targetCtx.lineCap = 'round';
+        targetCtx.lineJoin = 'round';
+      } else {
+        // ballpoint, fountain, brush
+        targetCtx.globalCompositeOperation = 'source-over';
+        targetCtx.globalAlpha = 1.0;
+        targetCtx.strokeStyle = stroke.color;
+        targetCtx.fillStyle = stroke.color;
+        targetCtx.lineCap = 'round';
+        targetCtx.lineJoin = 'round';
+      }
+
+      // 1点のみのタップ描画
+      if (pts.length === 1) {
+        const p = pts[0];
+        const r = (p.w || stroke.baseSize) / 2;
+        targetCtx.beginPath();
+        targetCtx.arc(p.x, p.y, Math.max(0.5, r), 0, Math.PI * 2);
+        targetCtx.fill();
+        targetCtx.restore();
+        return;
+      }
+
+      // 可変太さツール（万年筆・筆ペン）の場合はセグメントごとに太さを変えて滑らかに描画
+      if (stroke.tool === 'fountain' || stroke.tool === 'brush') {
+        for (let i = 0; i < pts.length - 1; i++) {
+          const p0 = pts[i];
+          const p1 = pts[i + 1];
+          targetCtx.beginPath();
+          targetCtx.lineWidth = p1.w || stroke.baseSize;
+          targetCtx.moveTo(p0.x, p0.y);
+          // 中点を使った二次ベジェ曲線で滑らかに接続
+          if (i < pts.length - 2) {
+            const p2 = pts[i + 2];
+            const midX = (p1.x + p2.x) / 2;
+            const midY = (p1.y + p2.y) / 2;
+            targetCtx.quadraticCurveTo(p1.x, p1.y, midX, midY);
+          } else {
+            targetCtx.lineTo(p1.x, p1.y);
+          }
+          targetCtx.stroke();
         }
+      } else {
+        // 一定太さツール（ボールペン・鉛筆・マーカー・消しゴム）は一括パスで高速描画
+        targetCtx.lineWidth = stroke.tool === 'highlighter'
+          ? Math.max(12, stroke.baseSize * 2.5)
+          : (stroke.tool === 'eraser' ? stroke.baseSize * 2 : stroke.baseSize);
 
-        function clearSearch() {
-            const input = document.getElementById('search-input');
-            if (input) input.value = '';
-            document.getElementById('search-clear-btn').classList.add('hidden');
-            renderDictionary();
+        targetCtx.beginPath();
+        targetCtx.moveTo(pts[0].x, pts[0].y);
+
+        for (let i = 1; i < pts.length - 1; i++) {
+          const midX = (pts[i].x + pts[i + 1].x) / 2;
+          const midY = (pts[i].y + pts[i + 1].y) / 2;
+          targetCtx.quadraticCurveTo(pts[i].x, pts[i].y, midX, midY);
         }
+        const last = pts[pts.length - 1];
+        targetCtx.lineTo(last.x, last.y);
+        targetCtx.stroke();
+      }
 
-        function resetFilters() {
-            document.getElementById('search-input').value = '';
-            document.getElementById('filter-jlpt').value = 'ALL';
-            document.getElementById('filter-grade').value = 'ALL';
-            document.getElementById('search-clear-btn').classList.add('hidden');
-            renderDictionary();
+      targetCtx.restore();
+    }
+
+    // 現在のノートの全ストロークを再描画
+    function redrawAllStrokes() {
+      const note = getCurrentNote();
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      if (!note) return;
+
+      for (const stroke of note.strokes) {
+        drawStroke(ctx, stroke);
+      }
+      updateUndoRedoButtons();
+    }
+
+    // --- キャンバスリサイズ処理 ---
+    function resizeCanvases() {
+      const rect = paperSheet.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+
+      dpr = window.devicePixelRatio || 1;
+      canvasWidth = rect.width;
+      canvasHeight = rect.height;
+
+      // 背景キャンバス
+      bgCanvas.width = canvasWidth * dpr;
+      bgCanvas.height = canvasHeight * dpr;
+      bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // 描画キャンバス
+      drawingCanvas.width = canvasWidth * dpr;
+      drawingCanvas.height = canvasHeight * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const note = getCurrentNote();
+      const paperType = note ? note.paperType : 'plain';
+      renderPaperBackground(bgCtx, canvasWidth, canvasHeight, paperType);
+      redrawAllStrokes();
+    }
+
+    window.addEventListener('resize', resizeCanvases);
+
+    // --- Pointer Events による描画入力処理 ---
+    function getPointerCoords(e) {
+      const rect = drawingCanvas.getBoundingClientRect();
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+        pressure: e.pressure && e.pressure > 0 ? e.pressure : 0.5
+      };
+    }
+
+    // 速度と筆圧から動的な線幅を計算（万年筆・筆ペン用）
+    function calculateDynamicWidth(baseSize, tool, speed, pressure, hasRealPressure) {
+      if (tool === 'fountain') {
+        // 速く書くと細く、ゆっくり書くとインクが溜まり太くなる
+        const speedFactor = Math.max(0.45, Math.min(1.35, 1.3 - speed * 0.45));
+        const pFactor = hasRealPressure ? (0.5 + pressure) : 1.0;
+        return Math.max(1, baseSize * speedFactor * pFactor);
+      } else if (tool === 'brush') {
+        // 筆ペンは抑揚を大きくする
+        const speedFactor = Math.max(0.3, Math.min(1.8, 1.65 - speed * 0.65));
+        const pFactor = hasRealPressure ? (0.4 + pressure * 1.3) : 1.0;
+        return Math.max(1.5, baseSize * 1.4 * speedFactor * pFactor);
+      }
+      return baseSize;
+    }
+
+    drawingCanvas.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0 && e.pointerType === 'mouse') return; // 左クリックのみ
+      drawingCanvas.setPointerCapture(e.pointerId);
+
+      const pt = getPointerCoords(e);
+      const now = performance.now();
+      const hasRealPressure = e.pointerType === 'pen' && e.pressure > 0;
+      const initWidth = calculateDynamicWidth(toolState.size, toolState.tool, 0.5, pt.pressure, hasRealPressure);
+
+      toolState.isDrawing = true;
+      toolState.lastPoint = pt;
+      toolState.lastTime = now;
+      toolState.lastWidth = initWidth;
+
+      toolState.currentStroke = {
+        tool: toolState.tool,
+        color: toolState.color,
+        baseSize: toolState.size,
+        points: [{ x: pt.x, y: pt.y, w: initWidth }]
+      };
+
+      // 書き始めの点を即時描画
+      drawStroke(ctx, toolState.currentStroke);
+    });
+
+    drawingCanvas.addEventListener('pointermove', (e) => {
+      if (!toolState.isDrawing || !toolState.currentStroke) return;
+
+      const pt = getPointerCoords(e);
+      const now = performance.now();
+      const dt = Math.max(1, now - toolState.lastTime);
+      const dist = Math.hypot(pt.x - toolState.lastPoint.x, pt.y - toolState.lastPoint.y);
+
+      // 微小すぎるノイズ移動を間引く
+      if (dist < 1.2) return;
+
+      const speed = dist / dt; // px/ms
+      const hasRealPressure = e.pointerType === 'pen' && e.pressure > 0;
+      const targetWidth = calculateDynamicWidth(toolState.size, toolState.tool, speed, pt.pressure, hasRealPressure);
+      // 太さの急激な変化をスムージング
+      const smoothedWidth = toolState.lastWidth * 0.65 + targetWidth * 0.35;
+
+      toolState.currentStroke.points.push({
+        x: pt.x,
+        y: pt.y,
+        w: smoothedWidth
+      });
+
+      toolState.lastPoint = pt;
+      toolState.lastTime = now;
+      toolState.lastWidth = smoothedWidth;
+
+      // リアルタイムプレビュー描画：
+      // マーカーや鉛筆は重ね描きによる濃さ変化を防ぐため、ストローク確定前までは一時的に全再描画で綺麗にプレビュー
+      if (toolState.tool === 'highlighter' || toolState.tool === 'pencil') {
+        redrawAllStrokes();
+        drawStroke(ctx, toolState.currentStroke);
+      } else {
+        // 高速インクリメンタル描画
+        const pts = toolState.currentStroke.points;
+        const len = pts.length;
+        if (len >= 2) {
+          const tempSegment = {
+            tool: toolState.currentStroke.tool,
+            color: toolState.currentStroke.color,
+            baseSize: toolState.currentStroke.baseSize,
+            points: pts.slice(Math.max(0, len - 3))
+          };
+          drawStroke(ctx, tempSegment);
         }
+      }
+    });
 
-        function renderDictionary() {
-            const items = getFilteredKanji();
-            const grid = document.getElementById('kanji-grid');
-            const emptyState = document.getElementById('empty-search-state');
-            const searchCount = document.getElementById('search-count');
-            const clearBtn = document.getElementById('search-clear-btn');
+    function finishStroke(e) {
+      if (!toolState.isDrawing) return;
+      toolState.isDrawing = false;
 
-            if (searchCount) searchCount.textContent = items.length;
+      if (e && e.pointerId !== undefined && drawingCanvas.hasPointerCapture(e.pointerId)) {
+        drawingCanvas.releasePointerCapture(e.pointerId);
+      }
 
-            const searchVal = document.getElementById('search-input')?.value;
-            if (clearBtn) {
-                if (searchVal) clearBtn.classList.remove('hidden');
-                else clearBtn.classList.add('hidden');
-            }
+      const note = getCurrentNote();
+      if (note && toolState.currentStroke && toolState.currentStroke.points.length > 0) {
+        // Undo履歴用に現在の状態を保存
+        undoStack.push(JSON.parse(JSON.stringify(note.strokes)));
+        if (undoStack.length > 40) undoStack.shift(); // 最大40段階
+        redoStack = []; // 新規描画でRedo履歴をクリア
 
-            if (!grid) return;
-            grid.innerHTML = '';
+        note.strokes.push(toolState.currentStroke);
+        note.updatedAt = Date.now();
 
-            if (items.length === 0) {
-                grid.classList.add('hidden');
-                if (emptyState) emptyState.classList.remove('hidden');
-                return;
-            }
+        redrawAllStrokes();
+        triggerAutoSave();
+      }
+      toolState.currentStroke = null;
+    }
 
-            if (emptyState) emptyState.classList.add('hidden');
-            grid.classList.remove('hidden');
+    drawingCanvas.addEventListener('pointerup', finishStroke);
+    drawingCanvas.addEventListener('pointercancel', finishStroke);
 
-            items.forEach(item => {
-                const isFav = state.favorites.includes(item.id);
-                const card = document.createElement('div');
-                card.className = "group relative bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-rose-400 dark:hover:border-rose-500 transition-all cursor-pointer flex flex-col justify-between";
-                card.onclick = () => openModal(item.id);
+    // --- ツール・カラー・サイズUIイベント ---
+    document.querySelectorAll('.tool-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tool-btn').forEach(b => {
+          b.classList.remove('active', 'bg-white', 'text-blue-600', 'shadow-xs');
+          b.classList.add('text-stone-600');
+        });
+        btn.classList.add('active', 'bg-white', 'text-blue-600', 'shadow-xs');
+        btn.classList.remove('text-stone-600');
 
-                card.innerHTML = `
-                    <div class="flex items-center justify-between text-[11px] font-bold text-slate-400">
-                        <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300">${item.jlpt}</span>
-                        <button onclick="toggleFavorite('${item.id}', event)" class="p-1 text-slate-300 hover:text-rose-500 ${isFav ? 'text-rose-500' : ''} transition">
-                            <i class="fa-solid fa-heart"></i>
-                        </button>
-                    </div>
+        toolState.tool = btn.dataset.tool;
+        updateSizePreview();
+      });
+    });
 
-                    <div class="text-center my-3">
-                        <div class="text-5xl font-bold kanji-font text-slate-900 dark:text-slate-50 group-hover:scale-110 transition transform">
-                            ${item.kanji}
-                        </div>
-                        <div class="text-xs font-semibold text-rose-600 dark:text-rose-400 mt-2 truncate">
-                            ${item.onyomi[0] || item.kunyomi[0] || ''}
-                        </div>
-                    </div>
+    // 初期アクティブツールのスタイル適用
+    const initialToolBtn = document.querySelector('.tool-btn[data-tool="ballpoint"]');
+    if (initialToolBtn) {
+      initialToolBtn.classList.add('bg-white', 'text-blue-600', 'shadow-xs');
+    }
 
-                    <div class="pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px] text-slate-400">
-                        <span>${item.strokes}画</span>
-                        <span class="truncate max-w-[80px] text-right">${item.meaning.split(',')[0]}</span>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
+    function setActiveColor(hex) {
+      toolState.color = hex;
+      customColorPicker.value = hex;
+
+      document.querySelectorAll('.color-btn').forEach(btn => {
+        if (btn.dataset.color.toLowerCase() === hex.toLowerCase()) {
+          btn.classList.add('ring-2', 'ring-offset-2', 'ring-blue-500');
+        } else {
+          btn.classList.remove('ring-2', 'ring-offset-2', 'ring-blue-500');
         }
+      });
 
+      // 消しゴム選択中に色を選んだら自動的にボールペンに戻す（UX向上）
+      if (toolState.tool === 'eraser') {
+        document.querySelector('.tool-btn[data-tool="ballpoint"]').click();
+      }
+      updateSizePreview();
+    }
 
-        /* ----------------------------------------------------
-           6. KANJI DETAIL MODAL LOGIC
-        ---------------------------------------------------- */
-        function openModal(kanjiId) {
-            const item = KANJI_DATABASE.find(k => k.id === kanjiId);
-            if (!item) return;
+    document.querySelectorAll('.color-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        setActiveColor(btn.dataset.color);
+      });
+    });
 
-            state.activeModalKanjiId = kanjiId;
+    customColorPicker.addEventListener('input', (e) => {
+      setActiveColor(e.target.value);
+    });
 
-            document.getElementById('modal-kanji-big').textContent = item.kanji;
-            document.getElementById('modal-jlpt').textContent = `JLPT ${item.jlpt}`;
-            document.getElementById('modal-grade').textContent = `${item.grade}`;
-            document.getElementById('modal-meaning-main').textContent = item.meaning;
-            document.getElementById('modal-strokes').textContent = `${item.strokes}画`;
-            document.getElementById('modal-radical').textContent = item.radical;
+    function updateSizePreview() {
+      const size = parseInt(penSizeSlider.value, 10);
+      toolState.size = size;
+      penSizeLabel.textContent = `${size}px`;
 
-            document.getElementById('modal-onyomi').textContent = item.onyomi.join('、') || '—';
-            document.getElementById('modal-kunyomi').textContent = item.kunyomi.join('、') || '—';
+      const visualSize = Math.min(24, Math.max(3, size));
+      sizePreviewDot.style.width = `${visualSize}px`;
+      sizePreviewDot.style.height = `${visualSize}px`;
+      sizePreviewDot.style.backgroundColor = toolState.tool === 'eraser' ? '#9ca3af' : toolState.color;
+    }
 
-            updateModalFavBtnState(kanjiId);
+    penSizeSlider.addEventListener('input', updateSizePreview);
+    updateSizePreview();
 
-            // Populate Examples
-            const exList = document.getElementById('modal-examples-list');
-            exList.innerHTML = '';
-            item.examples.forEach(ex => {
-                const exEl = document.createElement('div');
-                exEl.className = "flex items-center justify-between bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl text-xs border border-slate-200/60 dark:border-slate-700/60";
-                exEl.innerHTML = `
-                    <div>
-                        <span class="font-bold text-slate-800 dark:text-slate-100 text-sm">${ex.word}</span>
-                        <span class="ml-2 text-rose-600 dark:text-rose-400 font-medium">(${ex.reading})</span>
-                        <p class="text-slate-500 dark:text-slate-400 mt-0.5">${ex.meaning}</p>
-                    </div>
-                    <button onclick="speakText('${ex.word}')" class="p-2 text-slate-400 hover:text-rose-600 transition" title="読み上げ">
-                        <i class="fa-solid fa-volume-high"></i>
-                    </button>
-                `;
-                exList.appendChild(exEl);
-            });
+    // --- 紙の種類切り替え ---
+    paperTypeSelect.addEventListener('change', (e) => {
+      const newType = e.target.value;
+      const note = getCurrentNote();
+      if (!note) return;
 
-            const modal = document.getElementById('kanji-modal');
-            modal.classList.remove('hidden');
+      note.paperType = newType;
+      note.updatedAt = Date.now();
+      renderPaperBackground(bgCtx, canvasWidth, canvasHeight, newType);
+
+      // ダーク用紙選択時、黒インクのままなら白インクを自動提案・切り替え（視認性配慮）
+      if (newType === 'dark' && toolState.color.toLowerCase() === '#1e293b') {
+        setActiveColor('#ffffff');
+        showToast('黒板用紙に合わせてペンの色を白に変更しました');
+      } else if (newType !== 'dark' && newType !== 'kraft' && toolState.color.toLowerCase() === '#ffffff') {
+        setActiveColor('#1e293b');
+      }
+
+      triggerAutoSave();
+      renderNotesList();
+    });
+
+    // --- Undo / Redo / Clear 操作 ---
+    function updateUndoRedoButtons() {
+      undoBtn.disabled = undoStack.length === 0;
+      redoBtn.disabled = redoStack.length === 0;
+    }
+
+    function performUndo() {
+      const note = getCurrentNote();
+      if (!note || undoStack.length === 0) return;
+
+      redoStack.push(JSON.parse(JSON.stringify(note.strokes)));
+      note.strokes = undoStack.pop();
+      note.updatedAt = Date.now();
+
+      redrawAllStrokes();
+      triggerAutoSave();
+    }
+
+    function performRedo() {
+      const note = getCurrentNote();
+      if (!note || redoStack.length === 0) return;
+
+      undoStack.push(JSON.parse(JSON.stringify(note.strokes)));
+      note.strokes = redoStack.pop();
+      note.updatedAt = Date.now();
+
+      redrawAllStrokes();
+      triggerAutoSave();
+    }
+
+    undoBtn.addEventListener('click', performUndo);
+    redoBtn.addEventListener('click', performRedo);
+
+    // キーボードショートカット (Ctrl+Z / Ctrl+Y)
+    window.addEventListener('keydown', (e) => {
+      if (document.activeElement === noteTitleInput) return;
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) performRedo();
+        else performUndo();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        performRedo();
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      const note = getCurrentNote();
+      if (!note || note.strokes.length === 0) {
+        showToast('消去する描画がありません');
+        return;
+      }
+
+      openConfirmModal(
+        'ページを全消去',
+        '現在のページに書かれた内容をすべて消去しますか？（「元に戻す」で復元できます）',
+        () => {
+          undoStack.push(JSON.parse(JSON.stringify(note.strokes)));
+          redoStack = [];
+          note.strokes = [];
+          note.updatedAt = Date.now();
+          redrawAllStrokes();
+          triggerAutoSave();
+          showToast('ページをクリアしました');
         }
+      );
+    });
 
-        function closeModal() {
-            document.getElementById('kanji-modal').classList.add('hidden');
-            state.activeModalKanjiId = null;
+    // --- ノート管理 & LocalStorage 永続化 ---
+    function getCurrentNote() {
+      return appState.notes.find(n => n.id === appState.currentNoteId) || null;
+    }
+
+    function createNewNote(title = '無題のノート', paperType = 'ruled') {
+      const newNote = {
+        id: generateId(),
+        title: title,
+        paperType: paperType,
+        strokes: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      appState.notes.unshift(newNote);
+      switchNote(newNote.id);
+      saveToStorage(false);
+      return newNote;
+    }
+
+    function switchNote(noteId) {
+      const target = appState.notes.find(n => n.id === noteId);
+      if (!target) return;
+
+      appState.currentNoteId = target.id;
+      undoStack = [];
+      redoStack = [];
+
+      // UIに反映
+      noteTitleInput.value = target.title;
+      paperTypeSelect.value = target.paperType || 'plain';
+
+      renderPaperBackground(bgCtx, canvasWidth, canvasHeight, target.paperType || 'plain');
+      redrawAllStrokes();
+      renderNotesList();
+
+      // モバイル時はサイドバーを自動で閉じる
+      if (window.innerWidth < 768) {
+        closeSidebar();
+      }
+    }
+
+    function deleteNote(noteId, e) {
+      e.stopPropagation();
+      if (appState.notes.length <= 1) {
+        showToast('最後の1冊は削除できません');
+        return;
+      }
+
+      const target = appState.notes.find(n => n.id === noteId);
+      openConfirmModal(
+        'ノートの削除',
+        `「${target ? target.title : 'このノート'}」を削除しますか？この操作は取り消せません。`,
+        () => {
+          appState.notes = appState.notes.filter(n => n.id !== noteId);
+          if (appState.currentNoteId === noteId) {
+            switchNote(appState.notes[0].id);
+          } else {
+            renderNotesList();
+          }
+          saveToStorage(true, 'ノートを削除しました');
         }
+      );
+    }
 
-        function updateModalFavBtnState(kanjiId) {
-            const btn = document.getElementById('modal-fav-btn');
-            if (!btn) return;
-            const isFav = state.favorites.includes(kanjiId);
-            if (isFav) {
-                btn.className = "text-rose-500 text-2xl transition hover:scale-110";
-            } else {
-                btn.className = "text-slate-300 dark:text-slate-600 text-2xl transition hover:text-rose-500 hover:scale-110";
-            }
+    function renderNotesList() {
+      notesListEl.innerHTML = '';
+
+      appState.notes.forEach(note => {
+        const isActive = note.id === appState.currentNoteId;
+        const paperInfo = PAPER_CONFIGS[note.paperType] || PAPER_CONFIGS.plain;
+
+        const card = document.createElement('div');
+        card.className = `group p-3 rounded-xl border cursor-pointer transition-all flex items-start justify-between gap-2 ${
+          isActive
+            ? 'bg-white border-amber-500 shadow-sm ring-1 ring-amber-500/30'
+            : 'bg-white/60 hover:bg-white border-stone-200/80'
+        }`;
+        card.onclick = () => switchNote(note.id);
+
+        // 紙色プレビューバッジ
+        const badgeColor = paperInfo.bg;
+
+        card.innerHTML = `
+          <div class="flex items-start gap-2.5 min-w-0 flex-1">
+            <span class="w-4 h-5 rounded-xs border border-stone-300 shrink-0 mt-0.5 shadow-2xs" style="background-color: ${badgeColor};" title="${paperInfo.name}"></span>
+            <div class="min-w-0 flex-1">
+              <div class="font-medium text-sm text-stone-800 truncate ${isActive ? 'text-amber-900 font-bold' : ''}">
+                ${escapeHtml(note.title || '無題のノート')}
+              </div>
+              <div class="flex items-center gap-2 mt-1 text-[11px] text-stone-400">
+                <span>${paperInfo.name}</span>
+                <span>•</span>
+                <span>${formatDate(note.updatedAt)}</span>
+              </div>
+            </div>
+          </div>
+          <button class="delete-note-btn p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity" title="このノートを削除">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+        `;
+
+        const delBtn = card.querySelector('.delete-note-btn');
+        delBtn.onclick = (e) => deleteNote(note.id, e);
+
+        notesListEl.appendChild(card);
+      });
+
+      lucide.createIcons();
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, (m) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[m]));
+    }
+
+    // タイトル変更時の自動保存
+    noteTitleInput.addEventListener('input', (e) => {
+      const note = getCurrentNote();
+      if (!note) return;
+      note.title = e.target.value || '無題のノート';
+      note.updatedAt = Date.now();
+      renderNotesList();
+      triggerAutoSave();
+    });
+
+    // 保存処理（デバウンス付き自動保存＆即時保存）
+    let autoSaveTimer;
+    function triggerAutoSave() {
+      saveStatus.innerHTML = `
+        <i data-lucide="loader-2" class="w-3.5 h-3.5 text-amber-500 animate-spin"></i>
+        <span>保存中...</span>
+      `;
+      lucide.createIcons();
+
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(() => {
+        saveToStorage(false);
+      }, 600);
+    }
+
+    function saveToStorage(showNotification = false, customMsg = 'ノートを保存しました') {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+        saveStatus.innerHTML = `
+          <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-500"></i>
+          <span>保存済み</span>
+        `;
+        lucide.createIcons();
+        if (showNotification) {
+          showToast(customMsg);
         }
+      } catch (err) {
+        console.error('LocalStorage保存エラー:', err);
+        showToast('保存容量の上限に達した可能性があります');
+      }
+    }
 
-        function toggleFavoriteFromModal() {
-            if (state.activeModalKanjiId) {
-                toggleFavorite(state.activeModalKanjiId);
-            }
+    manualSaveBtn.addEventListener('click', () => {
+      saveToStorage(true, 'ブラウザに保存しました');
+    });
+
+    newNoteBtn.addEventListener('click', () => {
+      const count = appState.notes.length + 1;
+      createNewNote(`ノート #${count}`, 'ruled');
+      showToast('新しいノートを作成しました');
+    });
+
+    // --- PNG画像エクスポート（背景紙＋手書きストロークを合成出力） ---
+    exportPngBtn.addEventListener('click', () => {
+      const note = getCurrentNote();
+      if (!note) return;
+
+      // 出力用の一時キャンバスを作成（高解像度dpr対応）
+      const exportCanvas = document.createElement('canvas');
+      exportCanvas.width = canvasWidth * dpr;
+      exportCanvas.height = canvasHeight * dpr;
+      const eCtx = exportCanvas.getContext('2d');
+      eCtx.scale(dpr, dpr);
+
+      // 1. 背景の紙模様を描画
+      renderPaperBackground(eCtx, canvasWidth, canvasHeight, note.paperType || 'plain');
+
+      // 2. ストロークを描画
+      for (const stroke of note.strokes) {
+        drawStroke(eCtx, stroke);
+      }
+
+      // 3. ダウンロード実行
+      const link = document.createElement('a');
+      const safeTitle = (note.title || 'note').replace(/[\\/:*?"<>|]/g, '_');
+      link.download = `${safeTitle}.png`;
+      link.href = exportCanvas.toDataURL('image/png');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast('PNG画像をダウンロードしました');
+    });
+
+    // --- サイドバー開閉制御 ---
+    function openSidebar() {
+      sidebar.classList.remove('-translate-x-full');
+      sidebarOverlay.classList.remove('hidden');
+    }
+
+    function closeSidebar() {
+      sidebar.classList.add('-translate-x-full');
+      sidebarOverlay.classList.add('hidden');
+    }
+
+    toggleSidebarBtn.addEventListener('click', () => {
+      // デスクトップでは折りたたみ切り替え、モバイルではドロワー表示
+      if (window.innerWidth >= 768) {
+        sidebar.classList.toggle('hidden');
+        setTimeout(resizeCanvases, 50);
+      } else {
+        if (sidebar.classList.contains('-translate-x-full')) openSidebar();
+        else closeSidebar();
+      }
+    });
+
+    closeSidebarBtn.addEventListener('click', closeSidebar);
+    sidebarOverlay.addEventListener('click', closeSidebar);
+
+    // --- アプリ起動時の初期化 ---
+    function initApp() {
+      try {
+        const savedRaw = localStorage.getItem(STORAGE_KEY);
+        if (savedRaw) {
+          const parsed = JSON.parse(savedRaw);
+          if (parsed && Array.isArray(parsed.notes) && parsed.notes.length > 0) {
+            appState = parsed;
+          }
         }
-
-        function speakModalKanji() {
-            if (state.activeModalKanjiId) speakText(state.activeModalKanjiId);
-        }
-
-        function openPracticeFromModal() {
-            if (state.activeModalKanjiId) {
-                state.practiceKanjiId = state.activeModalKanjiId;
-                closeModal();
-                switchTab('practice');
-            }
-        }
-
-
-        /* ----------------------------------------------------
-           7. HANDWRITING PRACTICE CANVAS LOGIC
-        ---------------------------------------------------- */
-        let canvas, ctx;
-        let isDrawing = false;
-        let brushColor = '#0f172a';
-        let brushSize = 12;
-        let isEraser = false;
-        let showGuide = true;
-        let strokeHistory = [];
-
-        function initCanvasIfNeeded() {
-            canvas = document.getElementById('practice-canvas');
-            if (!canvas) return;
-            ctx = canvas.getContext('2d');
-
-            // Resize canvas resolution to match pixel width
-            const rect = canvas.getBoundingClientRect();
-            if (canvas.width !== rect.width || canvas.height !== rect.height) {
-                canvas.width = rect.width || 400;
-                canvas.height = rect.height || 400;
-            }
-
-            // Populate selector if empty
-            const select = document.getElementById('practice-kanji-select');
-            if (select && select.children.length === 0) {
-                KANJI_DATABASE.forEach(k => {
-                    const opt = document.createElement('option');
-                    opt.value = k.id;
-                    opt.textContent = `${k.kanji} (${k.onyomi[0] || k.kunyomi[0] || ''})`;
-                    select.appendChild(opt);
-                });
-                select.value = state.practiceKanjiId;
-            }
-
-            // Event Listeners for Mouse & Touch
-            canvas.onmousedown = startDrawing;
-            canvas.onmousemove = draw;
-            canvas.onmouseup = stopDrawing;
-            canvas.onmouseleave = stopDrawing;
-
-            canvas.ontouchstart = (e) => {
-                e.preventDefault();
-                startDrawing(e.touches[0]);
-            };
-            canvas.ontouchmove = (e) => {
-                e.preventDefault();
-                draw(e.touches[0]);
-            };
-            canvas.ontouchend = (e) => {
-                e.preventDefault();
-                stopDrawing();
-            };
-        }
-
-        function getCanvasCoords(e) {
-            const rect = canvas.getBoundingClientRect();
-            return {
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top
-            };
-        }
-
-        function startDrawing(e) {
-            isDrawing = true;
-            // Save state snapshot for undo
-            strokeHistory.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
-
-            const coords = getCanvasCoords(e);
-            ctx.beginPath();
-            ctx.moveTo(coords.x, coords.y);
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.strokeStyle = isEraser ? (document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff') : brushColor;
-            ctx.lineWidth = isEraser ? brushSize * 2 : brushSize;
-        }
-
-        function draw(e) {
-            if (!isDrawing) return;
-            const coords = getCanvasCoords(e);
-            ctx.lineTo(coords.x, coords.y);
-            ctx.stroke();
-        }
-
-        function stopDrawing() {
-            if (isDrawing) {
-                ctx.closePath();
-                isDrawing = false;
-            }
-        }
-
-        function undoStroke() {
-            if (strokeHistory.length > 0) {
-                const prevSnapshot = strokeHistory.pop();
-                ctx.putImageData(prevSnapshot, 0, 0);
-                playSound('click');
-            }
-        }
-
-        function clearCanvas() {
-            if (!ctx || !canvas) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            strokeHistory = [];
-            playSound('clear');
-        }
-
-        function setBrushColor(color) {
-            isEraser = false;
-            brushColor = color;
-            document.getElementById('eraser-btn').classList.remove('bg-rose-100', 'text-rose-600', 'dark:bg-rose-900/50');
-
-            document.querySelectorAll('.color-btn').forEach(btn => {
-                if (btn.dataset.color === color) {
-                    btn.classList.add('ring-2', 'ring-rose-500');
-                } else {
-                    btn.classList.remove('ring-2', 'ring-rose-500');
-                }
-            });
-        }
-
-        function setBrushSize(size) {
-            brushSize = parseInt(size, 10);
-            document.getElementById('brush-size-text').textContent = `${brushSize}px`;
-        }
-
-        function toggleEraser() {
-            isEraser = !isEraser;
-            const btn = document.getElementById('eraser-btn');
-            if (isEraser) {
-                btn.classList.add('bg-rose-100', 'text-rose-600', 'dark:bg-rose-900/50');
-            } else {
-                btn.classList.remove('bg-rose-100', 'text-rose-600', 'dark:bg-rose-900/50');
-            }
-        }
-
-        function toggleGuide(checked) {
-            showGuide = checked;
-            const wm = document.getElementById('canvas-watermark');
-            if (wm) {
-                if (showGuide) wm.classList.remove('hidden');
-                else wm.classList.add('hidden');
-            }
-        }
-
-        function selectPracticeKanji(kanjiId) {
-            state.practiceKanjiId = kanjiId;
-            updatePracticeCard();
-            clearCanvas();
-        }
-
-        function prevPracticeKanji() {
-            const index = KANJI_DATABASE.findIndex(k => k.id === state.practiceKanjiId);
-            if (index > 0) {
-                selectPracticeKanji(KANJI_DATABASE[index - 1].id);
-            }
-        }
-
-        function nextPracticeKanji() {
-            const index = KANJI_DATABASE.findIndex(k => k.id === state.practiceKanjiId);
-            if (index < KANJI_DATABASE.length - 1) {
-                selectPracticeKanji(KANJI_DATABASE[index + 1].id);
-            }
-        }
-
-        function updatePracticeCard() {
-            const item = KANJI_DATABASE.find(k => k.id === state.practiceKanjiId) || KANJI_DATABASE[0];
-            
-            document.getElementById('p-card-kanji').textContent = item.kanji;
-            document.getElementById('p-card-readings').textContent = item.onyomi.concat(item.kunyomi).join(' / ') || '—';
-            document.getElementById('p-card-meaning').textContent = item.meaning;
-            document.getElementById('p-card-strokes').innerHTML = `<i class="fa-solid fa-pen-line"></i> ${item.strokes}画`;
-            document.getElementById('p-card-jlpt').textContent = item.jlpt;
-
-            const wm = document.getElementById('canvas-watermark');
-            if (wm) wm.textContent = item.kanji;
-
-            const select = document.getElementById('practice-kanji-select');
-            if (select) select.value = item.id;
-        }
-
-        function speakKanjiCurrentPractice() {
-            speakText(state.practiceKanjiId);
-        }
-
-        function redrawCanvas() {
-            // Placeholder if canvas requires theme redraw
-        }
-
-
-        /* ----------------------------------------------------
-           8. FLASHCARDS LOGIC
-        ---------------------------------------------------- */
-        function initFlashcards() {
-            const deckFilter = document.getElementById('flashcard-deck-select')?.value || 'ALL';
-            
-            let source = KANJI_DATABASE;
-            if (deckFilter === 'FAV') {
-                source = KANJI_DATABASE.filter(k => state.favorites.includes(k.id));
-            } else if (deckFilter !== 'ALL') {
-                source = KANJI_DATABASE.filter(k => k.jlpt === deckFilter);
-            }
-
-            if (source.length === 0) {
-                source = KANJI_DATABASE; // Fallback
-            }
-
-            state.flashcards.deck = [...source];
-            state.flashcards.currentIndex = 0;
-            state.flashcards.isFlipped = false;
-            state.flashcards.masteredIds.clear();
-
-            renderCurrentFlashcard();
-        }
-
-        function shuffleFlashcards() {
-            for (let i = state.flashcards.deck.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [state.flashcards.deck[i], state.flashcards.deck[j]] = [state.flashcards.deck[j], state.flashcards.deck[i]];
-            }
-            state.flashcards.currentIndex = 0;
-            state.flashcards.isFlipped = false;
-            renderCurrentFlashcard();
-            playSound('click');
-        }
-
-        function flipCard() {
-            state.flashcards.isFlipped = !state.flashcards.isFlipped;
-            const inner = document.getElementById('flashcard-inner');
-            if (inner) {
-                if (state.flashcards.isFlipped) {
-                    inner.classList.add('rotate-y-180');
-                } else {
-                    inner.classList.remove('rotate-y-180');
-                }
-            }
-            playSound('flip');
-        }
-
-        function renderCurrentFlashcard() {
-            const { deck, currentIndex, masteredIds } = state.flashcards;
-            const inner = document.getElementById('flashcard-inner');
-
-            // Reset flip
-            state.flashcards.isFlipped = false;
-            if (inner) inner.classList.remove('rotate-y-180');
-
-            if (deck.length === 0) return;
-            const item = deck[currentIndex];
-
-            // Update Progress Bar
-            const total = deck.length;
-            const currentNum = currentIndex + 1;
-            const percent = Math.round((masteredIds.size / total) * 100);
-
-            document.getElementById('fc-progress-text').textContent = `${currentNum} / ${total}`;
-            document.getElementById('fc-percent-text').textContent = `${percent}%`;
-            document.getElementById('fc-progress-bar').style.width = `${percent}%`;
-
-            // Front
-            document.getElementById('fc-front-kanji').textContent = item.kanji;
-            document.getElementById('fc-front-jlpt').textContent = item.jlpt;
-            document.getElementById('fc-front-strokes').textContent = `${item.strokes} 画`;
-
-            // Back
-            document.getElementById('fc-back-kanji').textContent = item.kanji;
-            document.getElementById('fc-back-radical').textContent = `部首: ${item.radical}`;
-            document.getElementById('fc-back-readings').textContent = `${item.onyomi.join('、') || '—'} / ${item.kunyomi.join('、') || '—'}`;
-            document.getElementById('fc-back-meaning').textContent = `${item.meaning} (${item.meaningJp})`;
-
-            const ex = item.examples[0];
-            if (ex) {
-                document.getElementById('fc-back-example').textContent = `${ex.word} (${ex.reading}) - ${ex.meaning}`;
-            } else {
-                document.getElementById('fc-back-example').textContent = '—';
-            }
-        }
-
-        function rateFlashcard(isMastered) {
-            const { deck, currentIndex, masteredIds } = state.flashcards;
-            const currentItem = deck[currentIndex];
-
-            if (isMastered) {
-                masteredIds.add(currentItem.id);
-                playSound('correct');
-            } else {
-                masteredIds.delete(currentItem.id);
-                playSound('wrong');
-            }
-
-            // Move to next card
-            if (currentIndex < deck.length - 1) {
-                state.flashcards.currentIndex++;
-            } else {
-                // Loop deck
-                state.flashcards.currentIndex = 0;
-            }
-
-            renderCurrentFlashcard();
-        }
-
-        function speakKanjiCurrentFlashcard() {
-            const item = state.flashcards.deck[state.flashcards.currentIndex];
-            if (item) speakText(item.kanji);
-        }
-
-        function startFavoritesFlashcards() {
-            switchTab('flashcards');
-            const select = document.getElementById('flashcard-deck-select');
-            if (select) {
-                select.value = 'FAV';
-                initFlashcards();
-            }
-        }
-
-
-        /* ----------------------------------------------------
-           9. KANJI QUIZ LOGIC
-        ---------------------------------------------------- */
-        function startQuiz() {
-            const quizType = document.getElementById('quiz-type-select').value;
-            const quizCount = parseInt(document.getElementById('quiz-count-select').value, 10);
-
-            state.quiz.type = quizType;
-            state.quiz.totalQuestions = Math.min(quizCount, KANJI_DATABASE.length);
-            state.quiz.currentIndex = 0;
-            state.quiz.score = 0;
-            state.quiz.streak = 0;
-            state.quiz.maxStreak = 0;
-            state.quiz.active = true;
-
-            // Generate Questions
-            const shuffled = [...KANJI_DATABASE].sort(() => Math.random() - 0.5);
-            state.quiz.questions = shuffled.slice(0, state.quiz.totalQuestions).map(targetItem => {
-                // Generate 3 wrong options
-                const otherItems = KANJI_DATABASE.filter(k => k.id !== targetItem.id);
-                const wrongOptions = [...otherItems].sort(() => Math.random() - 0.5).slice(0, 3);
-
-                let options = [];
-                if (quizType === 'meaning') {
-                    options = [targetItem.meaning, ...wrongOptions.map(w => w.meaning)];
-                } else {
-                    const targetReading = targetItem.onyomi[0] || targetItem.kunyomi[0] || '—';
-                    options = [
-                        targetReading,
-                        ...wrongOptions.map(w => w.onyomi[0] || w.kunyomi[0] || '—')
-                    ];
-                }
-
-                // Shuffle 4 options
-                options.sort(() => Math.random() - 0.5);
-
-                return {
-                    target: targetItem,
-                    options: options,
-                    correctAnswer: quizType === 'meaning' ? targetItem.meaning : (targetItem.onyomi[0] || targetItem.kunyomi[0] || '—')
-                };
-            });
-
-            document.getElementById('quiz-setup-card').classList.add('hidden');
-            document.getElementById('quiz-result-card').classList.add('hidden');
-            document.getElementById('quiz-active-card').classList.remove('hidden');
-
-            renderQuizQuestion();
-        }
-
-        function renderQuizQuestion() {
-            const { questions, currentIndex, totalQuestions, score, streak, type } = state.quiz;
-            const q = questions[currentIndex];
-
-            document.getElementById('quiz-progress-text').textContent = `${currentIndex + 1} / ${totalQuestions}`;
-            document.getElementById('quiz-score').textContent = `${score} 点`;
-            document.getElementById('quiz-streak').textContent = `${streak} 連続`;
-
-            document.getElementById('quiz-prompt-label').textContent = type === 'meaning' ? 'この漢字の意味は？' : 'この漢字の読み方は？';
-            document.getElementById('quiz-kanji-display').textContent = q.target.kanji;
-
-            const grid = document.getElementById('quiz-options-grid');
-            grid.innerHTML = '';
-
-            q.options.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = "w-full py-4 px-5 rounded-2xl bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base hover:border-rose-500 hover:bg-rose-50/50 dark:hover:bg-slate-700 transition flex items-center justify-between text-left shadow-sm";
-                btn.innerHTML = `
-                    <span>${opt}</span>
-                    <i class="fa-regular fa-circle text-slate-300"></i>
-                `;
-                btn.onclick = () => handleQuizAnswer(opt, btn, q.correctAnswer);
-                grid.appendChild(btn);
-            });
-        }
-
-        function handleQuizAnswer(selectedOption, buttonEl, correctAnswer) {
-            // Disable all buttons to prevent double clicks
-            const allBtns = document.querySelectorAll('#quiz-options-grid button');
-            allBtns.forEach(b => b.disabled = true);
-
-            const isCorrect = selectedOption === correctAnswer;
-
-            if (isCorrect) {
-                buttonEl.className = "w-full py-4 px-5 rounded-2xl bg-emerald-500 border-2 border-emerald-600 text-white font-bold text-sm sm:text-base transition flex items-center justify-between text-left shadow-md";
-                buttonEl.querySelector('i').className = "fa-solid fa-circle-check text-white text-lg";
-                
-                state.quiz.score += 10;
-                state.quiz.streak++;
-                if (state.quiz.streak > state.quiz.maxStreak) {
-                    state.quiz.maxStreak = state.quiz.streak;
-                }
-                playSound('correct');
-            } else {
-                buttonEl.className = "w-full py-4 px-5 rounded-2xl bg-rose-500 border-2 border-rose-600 text-white font-bold text-sm sm:text-base transition flex items-center justify-between text-left shadow-md animate-shake";
-                buttonEl.querySelector('i').className = "fa-solid fa-circle-xmark text-white text-lg";
-
-                // Highlight correct answer
-                allBtns.forEach(b => {
-                    if (b.innerText.trim() === correctAnswer) {
-                        b.className = "w-full py-4 px-5 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 border-2 border-emerald-500 text-emerald-700 dark:text-emerald-300 font-bold text-sm sm:text-base flex items-center justify-between text-left";
-                    }
-                });
-
-                state.quiz.streak = 0;
-                playSound('wrong');
-            }
-
-            // Next question delay
-            setTimeout(() => {
-                state.quiz.currentIndex++;
-                if (state.quiz.currentIndex < state.quiz.totalQuestions) {
-                    renderQuizQuestion();
-                } else {
-                    finishQuiz();
-                }
-            }, 1200);
-        }
-
-        function finishQuiz() {
-            document.getElementById('quiz-active-card').classList.add('hidden');
-            document.getElementById('quiz-result-card').classList.remove('hidden');
-
-            const totalScore = state.quiz.score;
-            const maxScore = state.quiz.totalQuestions * 10;
-            const percent = Math.round((totalScore / maxScore) * 100);
-
-            document.getElementById('result-final-score').textContent = `${totalScore} 点`;
-            document.getElementById('result-max-streak').textContent = `${state.quiz.maxStreak} 回`;
-
-            const subtitle = document.getElementById('quiz-result-subtitle');
-            if (percent >= 80) {
-                subtitle.textContent = "素晴らしい！完璧に近いスコアです！ 🎉";
-                document.getElementById('quiz-result-icon').textContent = "🏆";
-            } else if (percent >= 50) {
-                subtitle.textContent = "よく頑張りました！復習して高得点を目指そう！ 👍";
-                document.getElementById('quiz-result-icon').textContent = "⭐";
-            } else {
-                subtitle.textContent = "暗記カードや辞書で復習してみましょう！ 📚";
-                document.getElementById('quiz-result-icon').textContent = "💡";
-            }
-        }
-
-        function resetQuizToSetup() {
-            document.getElementById('quiz-result-card').classList.add('hidden');
-            document.getElementById('quiz-setup-card').classList.remove('hidden');
-        }
-
-        function speakQuizKanji() {
-            const currentQ = state.quiz.questions[state.quiz.currentIndex];
-            if (currentQ) speakText(currentQ.target.kanji);
-        }
-
-
-        /* ----------------------------------------------------
-           10. FAVORITES VIEW RENDER
-        ---------------------------------------------------- */
-        function renderFavorites() {
-            const grid = document.getElementById('favorites-grid');
-            const emptyState = document.getElementById('empty-fav-state');
-
-            if (!grid) return;
-            grid.innerHTML = '';
-
-            const favItems = KANJI_DATABASE.filter(k => state.favorites.includes(k.id));
-
-            if (favItems.length === 0) {
-                grid.classList.add('hidden');
-                if (emptyState) emptyState.classList.remove('hidden');
-                return;
-            }
-
-            if (emptyState) emptyState.classList.add('hidden');
-            grid.classList.remove('hidden');
-
-            favItems.forEach(item => {
-                const card = document.createElement('div');
-                card.className = "group relative bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition cursor-pointer flex flex-col justify-between";
-                card.onclick = () => openModal(item.id);
-
-                card.innerHTML = `
-                    <div class="flex items-center justify-between text-[11px] font-bold text-slate-400">
-                        <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300">${item.jlpt}</span>
-                        <button onclick="toggleFavorite('${item.id}', event)" class="p-1 text-rose-500 transition hover:scale-110">
-                            <i class="fa-solid fa-heart"></i>
-                        </button>
-                    </div>
-
-                    <div class="text-center my-3">
-                        <div class="text-5xl font-bold kanji-font text-slate-900 dark:text-slate-50 group-hover:scale-110 transition transform">
-                            ${item.kanji}
-                        </div>
-                        <div class="text-xs font-semibold text-rose-600 dark:text-rose-400 mt-2 truncate">
-                            ${item.onyomi[0] || item.kunyomi[0] || ''}
-                        </div>
-                    </div>
-
-                    <div class="pt-2 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[11px] text-slate-400">
-                        <span>${item.strokes}画</span>
-                        <span class="truncate max-w-[80px] text-right">${item.meaning.split(',')[0]}</span>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-
-        /* ----------------------------------------------------
-           11. INITIALIZATION ON LOAD
-        ---------------------------------------------------- */
-        window.onload = function () {
-            // Restore theme
-            const savedTheme = localStorage.getItem('kanji_theme');
-            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.remove('light');
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-                document.documentElement.classList.add('light');
-            }
-
-            updateFavBadgeCount();
-            renderDictionary();
-
-            // Resize event listener for practice canvas responsiveness
-            window.addEventListener('resize', () => {
-                if (state.currentTab === 'practice') {
-                    initCanvasIfNeeded();
-                }
-            });
-        };
-    </script>
-
+      } catch (e) {
+        console.warn('保存データの読み込みに失敗しました:', e);
+      }
+
+      // 初回起動時はサンプルノートを1冊作成
+      if (appState.notes.length === 0) {
+        createNewNote('アイデアメモ', 'ruled');
+      } else {
+        const validId = appState.notes.some(n => n.id === appState.currentNoteId)
+          ? appState.currentNoteId
+          : appState.notes[0].id;
+        switchNote(validId);
+      }
+
+      // レイアウト確定後にキャンバスサイズを初期化
+      requestAnimationFrame(() => {
+        resizeCanvases();
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
 </body>
 </html>
